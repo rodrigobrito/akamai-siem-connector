@@ -22,9 +22,19 @@ RUN tar -xzf kafka_2.13-3.2.0.tgz -C /kafka/
 
 RUN rm -rf kafka_2.13-3.2.0.tgz
 
-RUN rm -rf /kafka/kafka_2.13-3.2.0/config/zookeeper.properties
+RUN mkdir /etc/kafka/
+
+RUN ln -s /kafka/kafka_2.13-3.2.0/config/ /etc/kafka/
+
+RUN echo "#!/bin/sh" > /bin/start.sh
+
+RUN echo "" >> /bin/start.sh
+
+RUN echo "/kafka/kafka_2.13-3.2.0/bin/zookeeper-server-start.sh /etc/kafka/zookeeper.properties" >> /bin/start.sh
+
+RUN ["chmod", "+x", "/bin/start.sh"]
 
 EXPOSE 2181/tcp
 EXPOSE 8080/tcp
 
-CMD ["/kafka/kafka_2.13-3.2.0/bin/zookeeper-server-start.sh", "/kafka/kafka_2.13-3.2.0/config/zookeeper.properties"]
+CMD ["/bin/start.sh"]

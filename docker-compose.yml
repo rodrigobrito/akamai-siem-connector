@@ -7,4 +7,40 @@ services:
       - "8080:8080"
     container_name: aka-kafka-zookeeper
     volumes:
-      - ./kafka/zookeeper/config/zookeeper.properties:/kafka/kafka_2.13-3.2.0/config/zookeeper.properties
+      - ./kafka/zookeeper/config/zookeeper.properties:/etc/kafka/zookeeper.properties
+  kafka1:
+    build: ./kafka/server
+    ports:
+      - "9092:9092"
+    container_name: aka-kafka-1
+    volumes:
+      - ./kafka/server/config/server.properties:/etc/kafka/server.properties
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: aka-elk
+    environment:
+      - discovery.type=single-node
+      - node.name=elkwetware
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1    
+    stdin_open: true
+    tty: true
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: aka-log
+    stdin_open: true
+    volumes:
+    - ./elk/logstash:/usr/share/logstash/pipeline
+    tty: true
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: aka-kib
+    environment:
+      elasticsearch.hosts: http://aka-elk:9200
+      server.host: "localhost"
+    stdin_open: true
+    ports:
+    - 5601:5601/tcp
