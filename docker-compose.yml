@@ -1,0 +1,10 @@
+version: "3"
+services:
+  kafka-zookeeper:
+    build: ./kafka/zookeeper
+    ports:
+      - "2181:2181"
+      - "8080:8080"
+    container_name: aka-kafka-zookeeper
+    volumes:
+      - ./kafka/zookeeper/config/zookeeper.properties:/kafka/kafka_2.13-3.2.0/config/zookeeper.properties

@@ -24,8 +24,6 @@ RUN rm -rf kafka_2.13-3.2.0.tgz
 
 RUN rm -rf /kafka/kafka_2.13-3.2.0/config/zookeeper.properties
 
-ADD  zookeeper.properties /kafka/kafka_2.13-3.2.0/config/zookeeper.properties
-
 EXPOSE 2181/tcp
 EXPOSE 8080/tcp
 
