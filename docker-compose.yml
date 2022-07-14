@@ -2,6 +2,7 @@ version: "3"
 services:
   kafka-zookeeper:
     build: ./kafka/zookeeper
+    image: ghcr.io/lcassiano/kafka-zookeeper:latest
     ports:
       - "2181:2181"
       - "8080:8080"
@@ -10,6 +11,7 @@ services:
       - ./kafka/zookeeper/config/zookeeper.properties:/etc/kafka/zookeeper.properties
   kafka1:
     build: ./kafka/server
+    image: ghcr.io/lcassiano/kafka-server:latest
     ports:
       - "9092:9092"
     container_name: aka-kafka-1
