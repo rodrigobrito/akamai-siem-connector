@@ -1,48 +1,123 @@
 version: "3"
+
 services:
-  kafka-zookeeper:
-    build: ./kafka/zookeeper
-    image: ghcr.io/lcassiano/kafka-zookeeper:latest
-    ports:
-      - "2181:2181"
-      - "8080:8080"
-    container_name: aka-kafka-zookeeper
-    volumes:
-      - ./kafka/zookeeper/config/zookeeper.properties:/etc/kafka/zookeeper.properties
-  kafka1:
-    build: ./kafka/server
-    image: ghcr.io/lcassiano/kafka-server:latest
-    ports:
-      - "9092:9092"
-    container_name: aka-kafka-1
-    volumes:
-      - ./kafka/server/config/server.properties:/etc/kafka/server.properties
+  consumer:
+    build: ./consumer
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+    container_name: consumer
+    hostname: consumer
+#    volumes:
+#      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumner.conf
+    depends_on:
+      - scheduler
+    profiles:
+      - run
+      - build
+
+  scheduler:
+    build: ./scheduler
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
+    container_name: scheduler
+    hostname: scheduler
+#    ports:
+#      - "1883:1883"
+#    volumes:
+#      - ./scheduler/etc/scheduler.conf:/home/scheduler/etc/scheduler.conf
+#      - ./scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
+    profiles:
+      - run
+      - build
+
+  base-kafka:
+    build: ./base-kafka
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
+    profiles:
+      - build
+
+  zookeeper:
+    build:
+      context: ./kafka/zookeeper
+      args:
+        - REPOSITORY_URL=${REPOSITORY_URL}
+        - REPOSITORY_ID=${REPOSITORY_ID}
+        - BUILD_VERSION=${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-zookeeper:${BUILD_VERSION}
+    container_name: kafka-zookeeper
+    hostname: kafka-zookeeper
+#    ports:
+#      - "2181:2181"
+#      - "8080:8080"
+#    volumes:
+#      - ./kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
+    profiles:
+      - run
+      - build
+
+  broker:
+    build:
+      context: ./kafka/broker
+      args:
+        - REPOSITORY_URL=${REPOSITORY_URL}
+        - REPOSITORY_ID=${REPOSITORY_ID}
+        - BUILD_VERSION=${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
+    container_name: broker
+    hostname: broker
+#    ports:
+#      - "9092:9092"
+#    volumes:
+#      - ./kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
+    depends_on:
+      - zookeeper
+    profiles:
+      - run
+      - build
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-    container_name: aka-elk
+    container_name: elasticsearch
+    hostname: elasticsearch
     environment:
       - discovery.type=single-node
-      - node.name=elkwetware
+      - node.name=elasticsearch
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    stdin_open: true
+    tty: true
     ulimits:
       memlock:
         soft: -1
         hard: -1    
-    stdin_open: true
-    tty: true
+    profiles:
+      - run
+      - build
+
   logstash:
     image: docker.elastic.co/logstash/logstash:7.17.0
-    container_name: aka-log
+    container_name: logstash
+    hostname: logstash
     stdin_open: true
-    volumes:
-    - ./elk/logstash:/usr/share/logstash/pipeline
     tty: true
+    volumes:
+      - ./elk/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - elasticsearch
+      - broker
+    profiles:
+      - run
+      - build
+
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.0
-    container_name: aka-kib
+    container_name: kibana
+    hostname: kibana
     environment:
-      elasticsearch.hosts: http://aka-elk:9200
-      server.host: "localhost"
+      - elasticsearch.hosts=http://elasticsearch:9200
+      - server.host=localhost
     stdin_open: true
     ports:
-    - 5601:5601/tcp
+      - "5601:5601/tcp"
+    depends_on:
+      - elasticsearch
+    profiles:
+      - run
+      - build

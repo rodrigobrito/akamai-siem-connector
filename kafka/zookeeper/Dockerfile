@@ -1,40 +1,30 @@
-FROM debian:latest
+ARG REPOSITORY_URL
+ARG REPOSITORY_ID
+ARG BUILD_VERSION
+FROM ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
 
 # File Author / Maintainer
-MAINTAINER Leandro Cassiano Alves
+LABEL maintainer="Leandro Cassiano Alves <lcassian@akamai.com>"
 
-### solve some problems with shell commands ###
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+# Add default scripts and configuration files.
+ADD bin ${BIN_DIR}
+ADD etc ${ETC_DIR}
 
-RUN apt-get update -y && \
-      apt-get upgrade -y && \
-      apt-get install -y curl \
-						unzip \
-						cron \
-			   ca-certificates \
-			   openjdk-11-jre
+# Define permissions and entrypoint.
+USER root
+RUN rm /opt/kafka/config/zookeeper.properties && \
+    ln -s ${ETC_DIR}/zookeeper.properties /opt/kafka/config/zookeeper.properties && \
+    ln -s ${BIN_DIR}/startup.sh /entrypoint.sh && \
+    chmod +x ${BIN_DIR}/*.sh
 
-RUN mkdir -p /kafka/
+# Default user.
+USER kafka
 
-RUN curl "https://dlcdn.apache.org/kafka/3.2.0/kafka_2.13-3.2.0.tgz" -o "kafka_2.13-3.2.0.tgz"
+# Default work directory.
+WORKDIR ${HOME_DIR}
 
-RUN tar -xzf kafka_2.13-3.2.0.tgz -C /kafka/
-
-RUN rm -rf kafka_2.13-3.2.0.tgz
-
-RUN mkdir /etc/kafka/
-
-RUN ln -s /kafka/kafka_2.13-3.2.0/config/ /etc/kafka/
-
-RUN echo "#!/bin/sh" > /bin/start.sh
-
-RUN echo "" >> /bin/start.sh
-
-RUN echo "/kafka/kafka_2.13-3.2.0/bin/zookeeper-server-start.sh /etc/kafka/zookeeper.properties" >> /bin/start.sh
-
-RUN ["chmod", "+x", "/bin/start.sh"]
-
+# Exposed ports
 EXPOSE 2181/tcp
 EXPOSE 8080/tcp
 
-CMD ["/bin/start.sh"]
+ENTRYPOINT [ "/entrypoint.sh" ]
