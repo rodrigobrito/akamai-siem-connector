@@ -5,10 +5,9 @@ LABEL maintainer="Felipe Vilarinho <fvilarin@akamai.com>"
 
 # Install the dependencies.
 RUN apk update && \
-    apk add --no-cache bash ca-certificates curl jq nodejs npm
+    apk add --no-cache bash ca-certificates curl jq nodejs
 
 # Environment variables.
-ENV APP_DIR=/usr/src/consumer
 ENV HOME_DIR=/home/consumer
 ENV BIN_DIR=${HOME_DIR}/bin
 ENV ETC_DIR=${HOME_DIR}/etc
@@ -22,13 +21,13 @@ RUN mkdir -p ${HOME_DIR} ${BIN_DIR} ${ETC_DIR} ${LIBS_DIR} ${LOGS_DIR}
 # Adding startup and configuration files.
 ADD bin ${BIN_DIR}
 ADD etc ${ETC_DIR}
-COPY src/*.* $APP_DIR/
+COPY src/main.js ${BIN_DIR}/
+COPY src/node_modules ${LIBS_DIR}
 
 # Define default permissions.
 RUN addgroup -S consumer && \
     adduser -S consumer -G consumer && \
     chown -R consumer:consumer ${HOME_DIR} && \
-    chown -R consumer:consumer ${APP_DIR} && \
     chmod +x ${BIN_DIR}/*.sh && \
     ln -s ${BIN_DIR}/startup.sh /entrypoint.sh
 
@@ -36,10 +35,6 @@ RUN addgroup -S consumer && \
 USER consumer
 
 # Define default work directory.
-WORKDIR ${APP_DIR}
-
-RUN npm install
-# If you are building your code for production
-# RUN npm ci --only=production
+WORKDIR ${HOME_DIR}
 
 ENTRYPOINT [ "/entrypoint.sh" ]

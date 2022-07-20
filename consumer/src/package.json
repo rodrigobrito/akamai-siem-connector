@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "akamai-edgegrid": "^3.2.0",
     "mqtt": "^4.3.7",
     "os": "^0.1.2"
   }
