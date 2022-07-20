@@ -7,16 +7,24 @@ services:
       - "2181:2181"
       - "8080:8080"
     container_name: aka-kafka-zookeeper
-    volumes:
-      - ./kafka/zookeeper/config/zookeeper.properties:/etc/kafka/zookeeper.properties
   kafka1:
     build: ./kafka/server
     image: ghcr.io/lcassiano/kafka-server:latest
     ports:
       - "9092:9092"
     container_name: aka-kafka-1
-    volumes:
-      - ./kafka/server/config/server.properties:/etc/kafka/server.properties
+    environment:
+      - KAFKA_BROKER_ID=1
+      - "KAFKA_ZOOKEEPER=aka-kafka-zookeeper:2181"
+  kafka2:
+    build: ./kafka/server
+    image: ghcr.io/lcassiano/kafka-server:latest
+    container_name: aka-kafka-2
+    ports:
+      - "9093:9092"
+    environment:
+      - KAFKA_BROKER_ID=2
+      - "KAFKA_ZOOKEEPER=aka-kafka-zookeeper:2181"      
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
     container_name: aka-elk

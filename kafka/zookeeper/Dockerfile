@@ -1,40 +1,35 @@
-FROM debian:latest
+FROM alpine:latest
 
 # File Author / Maintainer
 MAINTAINER Leandro Cassiano Alves
 
-### solve some problems with shell commands ###
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-
-RUN apt-get update -y && \
-      apt-get upgrade -y && \
-      apt-get install -y curl \
-						unzip \
-						cron \
-			   ca-certificates \
-			   openjdk-11-jre
+RUN apk add --update \
+    curl \
+    openjdk11-jre \
+	bash \
+ && rm /var/cache/apk/*
 
 RUN mkdir -p /kafka/
 
 RUN curl "https://dlcdn.apache.org/kafka/3.2.0/kafka_2.13-3.2.0.tgz" -o "kafka_2.13-3.2.0.tgz"
 
-RUN tar -xzf kafka_2.13-3.2.0.tgz -C /kafka/
+RUN tar -xzf kafka_2.13-3.2.0.tgz -C /tmp/
 
 RUN rm -rf kafka_2.13-3.2.0.tgz
 
-RUN mkdir /etc/kafka/
+RUN cp -rf /tmp/kafka_2.13-3.2.0/* /kafka/
 
-RUN ln -s /kafka/kafka_2.13-3.2.0/config/ /etc/kafka/
+RUN rm -rf /tmp/kafka_2.13-3.2.0
 
-RUN echo "#!/bin/sh" > /bin/start.sh
+COPY scripts/start.sh bin/start.sh
 
-RUN echo "" >> /bin/start.sh
+COPY scripts/setup.sh bin/setup.sh
 
-RUN echo "/kafka/kafka_2.13-3.2.0/bin/zookeeper-server-start.sh /etc/kafka/zookeeper.properties" >> /bin/start.sh
+RUN ["chmod", "+x", "bin/setup.sh"]
 
 RUN ["chmod", "+x", "/bin/start.sh"]
 
 EXPOSE 2181/tcp
 EXPOSE 8080/tcp
 
-CMD ["/bin/start.sh"]
+CMD ["bin/start.sh"]
