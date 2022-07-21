@@ -19,9 +19,9 @@ while [ $i -lt $((consumers)) ]
 do
   offset1=$((i * window))
   offset2=$(((i + 1) * window))
-  from=$(date +%s)
-  from=$((from - offset1))
-  to=$((from - offset2))
+  to=$(date +%s)
+  to=$((to - offset1))
+  from=$((to - offset2))
   message="{\"from\": $from, \"to\": $to}"
 
   echo "[$(date)][$message]" >> $LOGS_DIR/scheduler.log
