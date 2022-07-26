@@ -133,53 +133,52 @@ services:
       - run
       - build
 
-  # Elasticsearch image used to store the events.
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-    container_name: elasticsearch
-    hostname: elasticsearch
+  # Opensearch image used to store the events.
+  opensearch:
+    image: opensearchproject/opensearch:2.1.0
+    container_name: opensearch
+    hostname: opensearch
     environment:
       - discovery.type=single-node
-      - node.name=elasticsearch
+      - node.name=opensearch
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
 #    ports:
 #      - "9200:9200/tcp"
-#      - "9300:9300/tcp"
-    stdin_open: true
-    tty: true
+#      - "9600:9600/tcp"
     ulimits:
       memlock:
         soft: -1
         hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     profiles:
       - run
 
   # Logstash image used to collect the events from kafka and store in elasticsearch.
   logstash:
-    image: docker.elastic.co/logstash/logstash:7.17.0
+    image: docker.elastic.co/logstash/logstash-oss:7.12.1
     container_name: logstash
     hostname: logstash
-    stdin_open: true
-    tty: true
     volumes:
-      - ./elk/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./opensearch/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
-      - elasticsearch
+      - opensearch
       - broker
     profiles:
       - run
 
-  # Kibana image used to view/filter. the collected events.
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.0
-    container_name: kibana
-    hostname: kibana
-    environment:
-      - elasticsearch.hosts=http://elasticsearch:9200
-      - server.host=localhost
-    stdin_open: true
+  # Opensearch dashboards image used to view/filter. the collected events.
+  dashboards:
+    image: opensearchproject/opensearch-dashboards:2.1.0
+    hostname: dashboards
+    container_name: dashboards
     ports:
-      - "5601:5601/tcp"
+      - "5601:5601"
+    environment:
+      - OPENSEARCH_HOSTS=["https://opensearch:9200"]
     depends_on:
-      - elasticsearch
+      - opensearch
     profiles:
       - run
