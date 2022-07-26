@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Calculate the number of consumers to be used based based on TPS (Events triggered per second) and the limits of events that can be fetched.
-eventsLimit=$(cat $ETC_DIR/scheduler.conf | jq -r .eventsLimit)
-topic=$(cat $ETC_DIR/scheduler.conf | jq -r .topic)
 tps=$(cat $ETC_DIR/scheduler.conf | jq -r .tps)
 tpm=$((tps * 60))
+eventsLimit=$(cat $ETC_DIR/scheduler.conf | jq -r .eventsLimit)
+outputQueue=$(cat $ETC_DIR/scheduler.conf | jq -r .outputQueue)
 consumers=$((tpm / eventsLimit))
 
 if [ $consumers -lt 1 ]; then
@@ -15,17 +15,18 @@ window=$((60 / consumers))
 i=0
 
 # Define the offsets per consumers.
+now=$(date +%s)
+
 while [ $i -lt $((consumers)) ]
 do
   offset1=$((i * window))
   offset2=$(((i + 1) * window))
-  to=$(date +%s)
-  to=$((to - offset1))
-  from=$((to - offset2))
-  message="{\"from\": $from, \"to\": $to}"
+  to=$((now - offset1))
+  from=$((now - offset2))
+  message="{\"job\": \"$now-$((i + 1))\", \"from\": $from, \"to\": $to, \"eventsLimit\": $eventsLimit}"
 
-  echo "[$(date)][$message]" >> $LOGS_DIR/scheduler.log
-  mosquitto_pub -I "$HOSTNAME" -t "$topic" -m "$message" -d >> $LOGS_DIR/scheduler.log
+  echo "[$(now)][$message]" >> $LOGS_DIR/scheduler.log
+  mosquitto_pub -I "$HOSTNAME" -t "$outputQueue" -m "$message" -d >> $LOGS_DIR/scheduler.log
 
   let i++
 done
