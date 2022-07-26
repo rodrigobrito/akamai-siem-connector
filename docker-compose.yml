@@ -1,19 +1,76 @@
 version: "3"
 
 services:
+  # Base consumer image.
+  base-consumer:
+    build: base-consumer
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
+    profiles:
+      - build
+
+  # Consumer that generated mock events. Uncomment to use it.
   consumer:
-    build: ./consumer
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
     container_name: consumer
     hostname: consumer
 #    volumes:
-#      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumner.conf
-    depends_on:
-      - scheduler
+#      - ./base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
     profiles:
       - run
+
+   # Consumer that collects from Akamai SIEM API. Uncomment to use it.
+#  consumer:
+#    build:
+#      context: ./consumer
+#      args:
+#        - REPOSITORY_URL=${REPOSITORY_URL}
+#        - REPOSITORY_ID=${REPOSITORY_ID}
+#        - BUILD_VERSION=${BUILD_VERSION}
+#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+#    container_name: consumer
+#    hostname: consumer
+#    volumes:
+#      - ~/.edgerc:/home/consumer/.edgerc
+#      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+#    profiles:
+#      - build
+#      - run
+
+  # Base processor image.
+  base-processor:
+    build: base-processor
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
+    profiles:
       - build
 
+  # Processor that stores events in files. Uncomment to use it.
+  processor:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
+    container_name: processor
+    hostname: processor
+#    volumes:
+#      - ./base-processor/etc/processor.conf:/home/processor/etc/processor.conf
+    profiles:
+      - run
+
+   # Processor that stores events in kafka. Uncomment to use it.
+#  processor:
+#    build:
+#      context: processor-kafka
+#      args:
+#        - REPOSITORY_URL=${REPOSITORY_URL}
+#        - REPOSITORY_ID=${REPOSITORY_ID}
+#        - BUILD_VERSION=${BUILD_VERSION}
+#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-s3:${BUILD_VERSION}
+#    container_name: processor
+#    hostname: processor
+#    volumes:
+#      - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+#    profiles:
+#      - build
+#      - run
+
+  # Scheduler that defines the jobs for the consumer.
   scheduler:
     build: ./scheduler
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
@@ -25,15 +82,17 @@ services:
 #      - ./scheduler/etc/scheduler.conf:/home/scheduler/etc/scheduler.conf
 #      - ./scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
     profiles:
-      - run
       - build
+      - run
 
+  # Base kafka image to be used by the broker and zookeeper.
   base-kafka:
     build: ./base-kafka
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
     profiles:
       - build
 
+  # Zookeeper image used to control the broker instances.
   zookeeper:
     build:
       context: ./kafka/zookeeper
@@ -41,7 +100,7 @@ services:
         - REPOSITORY_URL=${REPOSITORY_URL}
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-zookeeper:${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/zookeeper:${BUILD_VERSION}
     container_name: zookeeper
     hostname: zookeeper
 #    ports:
@@ -53,6 +112,7 @@ services:
       - run
       - build
 
+  # Broker image used to receive the events collected.
   broker:
     build:
       context: ./kafka/broker
@@ -73,6 +133,7 @@ services:
       - run
       - build
 
+  # Elasticsearch image used to store the events.
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
     container_name: elasticsearch
@@ -80,7 +141,6 @@ services:
     environment:
       - discovery.type=single-node
       - node.name=elasticsearch
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 #    ports:
 #      - "9200:9200/tcp"
 #      - "9300:9300/tcp"
@@ -89,11 +149,11 @@ services:
     ulimits:
       memlock:
         soft: -1
-        hard: -1    
+        hard: -1
     profiles:
       - run
-      - build
 
+  # Logstash image used to collect the events from kafka and store in elasticsearch.
   logstash:
     image: docker.elastic.co/logstash/logstash:7.17.0
     container_name: logstash
@@ -107,8 +167,8 @@ services:
       - broker
     profiles:
       - run
-      - build
 
+  # Kibana image used to view/filter. the collected events.
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.0
     container_name: kibana
@@ -123,4 +183,3 @@ services:
       - elasticsearch
     profiles:
       - run
-      - build
