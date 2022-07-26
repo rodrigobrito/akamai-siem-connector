@@ -1,7 +1,14 @@
 {
+  "name": "consumer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Felipe Vilarinho <fvilarin@akamai.com>",
+  "license": "Apache-2.0",
   "dependencies": {
-    "akamai-edgegrid": "^3.2.0",
-    "mqtt": "^4.3.7",
-    "os": "^0.1.2"
+    "akamai-edgegrid": "^3.2.0"
   }
 }

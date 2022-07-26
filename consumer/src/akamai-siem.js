@@ -1,35 +1,59 @@
-const edgegrid = require('akamai-edgegrid');
+const { Edgegrid } = require('akamai-edgegrid');
+const linebreak = "\\n";
 
-const fetchEvents = function (edgegridFilename, edgegridSectionName, configurations, from, to){
-    let authParms = {
-        path: edgegridFilename,
-        section: edgegridSectionName
+const fetchEvents = function (messageObject, settingsObject) {
+    let authParams = {
+        path: settingsObject.edgercFilename,
+        section: settingsObject.edgercSection
     };
 
-    let eg = new edgegrid(authParms);
+    let eg = new Edgegrid(authParams);
 
     let fetchEventsParams = {
-        path: "/siem/v1/configs/" + configurations,
+        path: "/siem/v1/configs/" + settingsObject.configsIds,
         method: "GET",
         headers: {
             Accept: "application/json"
         },
         qs: {
-            from: from,
-            to: to
+            limit: messageObject.eventsLimit,
+            from: messageObject.from,
+            to: messageObject.to
         }
     };
 
-    let response;
+    eg.auth(fetchEventsParams);
 
-    eg.auth(fetchEventsParams).send(function (error, response, body) {
-        if (error)
-            console.log(error, response, body);
-        else
-            response = body;
+    return new Promise(function (resolve, reject){
+        eg.send(function (error, response, body){
+            if(error){
+                console.log(error, response, body);
+
+                return reject(error, response);
+            }
+
+            let eventsBuffer = body.split(linebreak);
+            let eventsList = [];
+
+            eventsBuffer.forEach((item, index) => {
+                if(item.length > 0 && index < (eventsBuffer.length - 1)){
+                    let eventObject = {
+                        key: messageObject.job + "-" + index,
+                        value: data.replace("'", "").replace(/\\/g, "")
+                    };
+
+                    eventsList.push(eventObject);
+                }
+            });
+
+            let eventsObject = {
+                "job": messageObject.job,
+                "events": eventsList
+            };
+
+            return resolve(JSON.stringify(eventsObject));
+        });
     });
-
-    return response;
 };
 
 module.exports = { fetchEvents };
