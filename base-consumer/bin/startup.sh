@@ -2,4 +2,4 @@
 
 $BIN_DIR/setup.sh
 
-node $APP_DIR/main.js
+node $BIN_DIR/main.js
