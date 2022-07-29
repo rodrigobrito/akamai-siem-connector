@@ -9,32 +9,32 @@ services:
       - build
 
   # Consumer that generated mock events. Uncomment to use it.
-  consumer:
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-    container_name: consumer
-    hostname: consumer
+  #consumer:
+  #  image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
+  #  container_name: consumer
+  #  hostname: consumer
 #    volumes:
 #      - ./base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
-    profiles:
-      - run
+#    profiles:
+#      - run
 
    # Consumer that collects from Akamai SIEM API. Uncomment to use it.
-#  consumer:
-#    build:
-#      context: ./consumer
-#      args:
-#        - REPOSITORY_URL=${REPOSITORY_URL}
-#        - REPOSITORY_ID=${REPOSITORY_ID}
-#        - BUILD_VERSION=${BUILD_VERSION}
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
-#    container_name: consumer
-#    hostname: consumer
-#    volumes:
-#      - ~/.edgerc:/home/consumer/.edgerc
-#      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
-#    profiles:
-#      - build
-#      - run
+  consumer:
+    build:
+      context: ./consumer
+      args:
+        - REPOSITORY_URL=${REPOSITORY_URL}
+        - REPOSITORY_ID=${REPOSITORY_ID}
+        - BUILD_VERSION=${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+    container_name: consumer
+    hostname: consumer
+    volumes:
+      - ~/.edgerc:/home/consumer/.edgerc
+      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+    profiles:
+      - build
+      - run
 
   # Base processor image.
   base-processor:
