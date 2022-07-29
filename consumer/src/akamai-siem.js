@@ -40,7 +40,7 @@ const fetchEvents = function (messageObject, settingsObject) {
                 if (item.length > 0 && index < (eventsBuffer.length - 1)) {
                     let eventObject = {
                         key: messageObject.job + "-" + index,
-                        value: data.replace("'", "").replace(/\\/g, "")
+                        value: item.replace("'", "").replace(/\\/g, "")
                     };
 
                     eventsList.push(eventObject);
