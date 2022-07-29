@@ -23,9 +23,6 @@ services:
     hostname: processor
     volumes:
       - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
-    profiles:
-      - build
-      - run
 
   # Scheduler that defines the jobs for the consumer.
   scheduler:
