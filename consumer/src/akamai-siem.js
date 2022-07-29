@@ -1,4 +1,4 @@
-const { Edgegrid } = require('akamai-edgegrid');
+var EdgeGrid = require('akamai-edgegrid');
 const linebreak = "\\n";
 
 const fetchEvents = function (messageObject, settingsObject) {
