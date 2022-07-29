@@ -16,6 +16,17 @@ services:
       - ACCESS_TOKEN=${ACCESS_TOKEN}
       - CONFIG_ID=${CONFIG_ID}
 
+ # Processor that stores events in kafka. Uncomment to use it.
+  processor:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor:${BUILD_VERSION}
+    container_name: processor
+    hostname: processor
+    volumes:
+      - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+    profiles:
+      - build
+      - run
+
   # Scheduler that defines the jobs for the consumer.
   scheduler:
     build: ./scheduler

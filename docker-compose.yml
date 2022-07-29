@@ -60,7 +60,7 @@ services:
         - REPOSITORY_URL=${REPOSITORY_URL}
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-s3:${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor:${BUILD_VERSION}
     container_name: processor
     hostname: processor
     volumes:
