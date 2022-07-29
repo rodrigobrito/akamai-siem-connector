@@ -30,7 +30,6 @@ services:
     container_name: consumer
     hostname: consumer
     volumes:
-      - ~/.edgerc:/home/consumer/.edgerc
       - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
     environment:
       - BASE_URI=${BASE_URI}
