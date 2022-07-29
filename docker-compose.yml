@@ -31,12 +31,6 @@ services:
     hostname: consumer
     volumes:
       - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
-    environment:
-      - BASE_URI=${BASE_URI}
-      - CLIENT_TOKEN=${CLIENT_TOKEN}
-      - CLIENT_SECRET=${CLIENT_SECRET}
-      - ACCESS_TOKEN=${ACCESS_TOKEN}
-      - CONFIG_ID=${CONFIG_ID}
     profiles:
       - build
       - run

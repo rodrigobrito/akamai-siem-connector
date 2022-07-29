@@ -9,6 +9,12 @@ services:
     volumes:
       - ~/.edgerc:/home/consumer/.edgerc
       - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+    environment:
+      - BASE_URI=${BASE_URI}
+      - CLIENT_TOKEN=${CLIENT_TOKEN}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
+      - CONFIG_ID=${CONFIG_ID}
 
   # Scheduler that defines the jobs for the consumer.
   scheduler:
