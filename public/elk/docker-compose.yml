@@ -1,0 +1,104 @@
+version: "3"
+
+services:
+   # Consumer that collects from Akamai SIEM API. Uncomment to use it.
+  consumer:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+    container_name: consumer
+    hostname: consumer
+    volumes:
+      - ~/.edgerc:/home/consumer/.edgerc
+      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+    environment:
+      - BASE_URI=${BASE_URI}
+      - CLIENT_TOKEN=${CLIENT_TOKEN}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
+      - CONFIG_ID=${CONFIG_ID}
+
+ # Processor that stores events in kafka. Uncomment to use it.
+  processor:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor:${BUILD_VERSION}
+    container_name: processor
+    hostname: processor
+    volumes:
+      - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+
+  # Scheduler that defines the jobs for the consumer.
+  scheduler:
+    build: ./scheduler
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
+    container_name: scheduler
+    hostname: scheduler
+#    ports:
+#      - "1883:1883"
+#    volumes:
+#      - ./scheduler/etc/scheduler.conf:/home/scheduler/etc/scheduler.conf
+#      - ./scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
+
+  # Zookeeper image used to control the broker instances.
+  zookeeper:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/zookeeper:${BUILD_VERSION}
+    container_name: zookeeper
+    hostname: zookeeper
+#    ports:
+#      - "2181:2181"
+#      - "8080:8080"
+#    volumes:
+#      - ./kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
+
+  # Broker image used to receive the events collected.
+  broker:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
+    container_name: broker
+    hostname: broker
+#    ports:
+#      - "9092:9092"
+#    volumes:
+#      - ./kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
+    depends_on:
+      - zookeeper
+
+  # Opensearch image used to store the events.
+  opensearch:
+    image: opensearchproject/opensearch:2.1.0
+    container_name: opensearch
+    hostname: opensearch
+    environment:
+      - discovery.type=single-node
+      - node.name=opensearch
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
+#    ports:
+#      - "9200:9200/tcp"
+#      - "9600:9600/tcp"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  # Logstash image used to collect the events from kafka and store in elasticsearch.
+  logstash:
+    image: docker.elastic.co/logstash/logstash-oss:7.12.1
+    container_name: logstash
+    hostname: logstash
+    volumes:
+      - ./opensearch/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on:
+      - opensearch
+      - broker
+
+  # Opensearch dashboards image used to view/filter. the collected events.
+  dashboards:
+    image: opensearchproject/opensearch-dashboards:2.1.0
+    hostname: dashboards
+    container_name: dashboards
+    ports:
+      - "5601:5601"
+    environment:
+      - OPENSEARCH_HOSTS=["https://opensearch:9200"]
+    depends_on:
+      - opensearch
