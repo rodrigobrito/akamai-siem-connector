@@ -44,31 +44,31 @@ services:
       - build
 
   # Processor that stores events in files. Uncomment to use it.
-  processor:
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-    container_name: processor
-    hostname: processor
-#    volumes:
-#      - ./base-processor/etc/processor.conf:/home/processor/etc/processor.conf
-    profiles:
-      - run
-
-   # Processor that stores events in kafka. Uncomment to use it.
 #  processor:
-#    build:
-#      context: processor-kafka
-#      args:
-#        - REPOSITORY_URL=${REPOSITORY_URL}
-#        - REPOSITORY_ID=${REPOSITORY_ID}
-#        - BUILD_VERSION=${BUILD_VERSION}
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-s3:${BUILD_VERSION}
+#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
 #    container_name: processor
 #    hostname: processor
 #    volumes:
-#      - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+#      - ./base-processor/etc/processor.conf:/home/processor/etc/processor.conf
 #    profiles:
-#      - build
 #      - run
+
+   # Processor that stores events in kafka. Uncomment to use it.
+  processor:
+    build:
+      context: processor-kafka
+      args:
+        - REPOSITORY_URL=${REPOSITORY_URL}
+        - REPOSITORY_ID=${REPOSITORY_ID}
+        - BUILD_VERSION=${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-s3:${BUILD_VERSION}
+    container_name: processor
+    hostname: processor
+#    volumes:
+#      - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+    profiles:
+      - build
+      - run
 
   # Scheduler that defines the jobs for the consumer.
   scheduler:
