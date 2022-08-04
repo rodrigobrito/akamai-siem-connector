@@ -1,24 +1,40 @@
 version: "3"
 
 services:
-  # Base consumer image.
+# Base Apache kafka image to be used to construct the broker and zookeeper.
+  base-kafka:
+    build: ./base-kafka
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
+    profiles:
+      - build
+
+# Base consumer image used to construct Akamai SIEM consumer.
   base-consumer:
     build: base-consumer
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
     profiles:
       - build
 
-  # Consumer that generated mock events. Uncomment to use it.
+# Base processor image used to constructor processors to consume Akamai SIEM events.
+  base-processor:
+    build: base-processor
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
+    profiles:
+      - build
+
+# Consumer that generated mock events. Uncomment to use it.
   consumer:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
     container_name: consumer
     hostname: consumer
 #    volumes:
 #      - ./base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+#    depends_on:
+#      - scheduler
     profiles:
       - run
 
-   # Consumer that collects from Akamai SIEM API. Uncomment to use it.
+# Consumer that collects from Akamai SIEM. Uncomment to use it.
 #  consumer:
 #    build:
 #      context: ./consumer
@@ -32,28 +48,25 @@ services:
 #    volumes:
 #      - ~/.edgerc:/home/consumer/.edgerc
 #      - ./consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+#    depends_on:
+#      - scheduler
 #    profiles:
 #      - build
 #      - run
 
-  # Base processor image.
-  base-processor:
-    build: base-processor
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-    profiles:
-      - build
-
-  # Processor that stores events in files. Uncomment to use it.
+# Processor that stores events in files. Uncomment to use it.
 #  processor:
 #    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
 #    container_name: processor
 #    hostname: processor
 #    volumes:
 #      - ./base-processor/etc/processor.conf:/home/processor/etc/processor.conf
+#    depends_on:
+#      - scheduler
 #    profiles:
 #      - run
 
-   # Processor that stores events in kafka. Uncomment to use it.
+# Processor that stores events in Apache kafka. Uncomment to use it.
   processor:
     build:
       context: processor-kafka
@@ -66,11 +79,13 @@ services:
     hostname: processor
 #    volumes:
 #      - ./processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+    depends_on:
+      - scheduler
     profiles:
       - build
       - run
 
-  # Scheduler that defines the jobs for the consumer.
+# Scheduler that defines the jobs for the consumer.
   scheduler:
     build: ./scheduler
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
@@ -85,14 +100,7 @@ services:
       - build
       - run
 
-  # Base kafka image to be used by the broker and zookeeper.
-  base-kafka:
-    build: ./base-kafka
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
-    profiles:
-      - build
-
-  # Zookeeper image used to control the broker instances.
+# Zookeeper image used to control the broker instances.
   zookeeper:
     build:
       context: ./kafka/zookeeper
@@ -112,7 +120,7 @@ services:
       - run
       - build
 
-  # Broker image used to receive the events collected.
+# Broker image used to receive the events collected.
   broker:
     build:
       context: ./kafka/broker
@@ -133,52 +141,30 @@ services:
       - run
       - build
 
-  # Opensearch image used to store the events.
-  opensearch:
-    image: opensearchproject/opensearch:2.1.0
-    container_name: opensearch
-    hostname: opensearch
+# UI for Apache Kafka.
+  broker-ui:
+    image: provectuslabs/kafka-ui:latest
     environment:
-      - discovery.type=single-node
-      - node.name=opensearch
-      - bootstrap.memory_lock=true
-      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
-#    ports:
-#      - "9200:9200/tcp"
-#      - "9600:9600/tcp"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
+      - KAFKA_CLUSTERS_0_NAME=broker
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    container_name: broker-ui
+    hostname: broker-ui
+    ports:
+      - "8080:8080"
+    depends_on:
+      - broker
     profiles:
       - run
 
-  # Logstash image used to collect the events from kafka and store in elasticsearch.
+# Logstash image used to collect the events from kafka.
   logstash:
     image: docker.elastic.co/logstash/logstash-oss:7.12.1
     container_name: logstash
     hostname: logstash
     volumes:
-      - ./opensearch/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
-      - opensearch
       - broker
-    profiles:
-      - run
-
-  # Opensearch dashboards image used to view/filter. the collected events.
-  dashboards:
-    image: opensearchproject/opensearch-dashboards:2.1.0
-    hostname: dashboards
-    container_name: dashboards
-    ports:
-      - "5601:5601"
-    environment:
-      - OPENSEARCH_HOSTS=["https://opensearch:9200"]
-    depends_on:
-      - opensearch
     profiles:
       - run

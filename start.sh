@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose --profile run up $1
+docker-compose --profile run up -d $1

@@ -3,7 +3,7 @@ const os = require("os");
 
 const storeEvent = async function (eventsRaw, settingsObject){
     const kafka = new Kafka({ brokers: settingsObject.kafka.brokers });
-    const producer = kafka.producer();
+    const producer = kafka.producer({ maxBytesPerPartition: settingsObject.maxMessageSize });
     const now = new Date();
 
     await producer.connect();
