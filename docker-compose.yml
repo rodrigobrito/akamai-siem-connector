@@ -150,12 +150,31 @@ services:
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
     container_name: broker-ui
     hostname: broker-ui
-    ports:
-      - "8080:8080"
+#    ports:
+#      - "8080:8080"
     depends_on:
       - broker
     profiles:
       - run
+
+# Proxy for delivery https services.
+  proxy:
+    build:
+      context: ./proxy
+      args:
+        - REPOSITORY_URL=${REPOSITORY_URL}
+        - REPOSITORY_ID=${REPOSITORY_ID}
+        - BUILD_VERSION=${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/proxy:${BUILD_VERSION}
+    container_name: proxy
+    hostname: proxy
+    ports:
+      - "443:443"
+    depends_on:
+      - broker-ui
+    profiles:
+      - run
+      - build
 
 # Logstash image used to collect the events from kafka.
   logstash:
