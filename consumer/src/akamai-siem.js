@@ -1,17 +1,15 @@
-var EdgeGrid = require('akamai-edgegrid');
+const EdgeGrid = require('akamai-edgegrid');
 const linebreak = "\\n";
 
 const fetchEvents = function (messageObject, settingsObject) {
+    const authParams = {
+        path: settingsObject.edgercFilename,
+        section: settingsObject.edgercSection
+    }
 
-    var clientToken = process.env.CLIENT_TOKEN,
-        clientSecret = process.env.CLIENT_SECRET,
-        accessToken = process.env.ACCESS_TOKEN,
-        baseUri = `https://${process.env.BASE_URI}/`;
-
-    var eg = new EdgeGrid(clientToken, clientSecret, accessToken, baseUri);
-
-    let fetchEventsParams = {
-        path: `/siem/v1/configs/${process.env.CONFIG_ID}`,
+    const eg = new EdgeGrid(authParams);
+    const fetchEventsParams = {
+        path: "/siem/v1/configs/" + settingsObject.configsIds,
         method: "GET",
         headers: {
             Accept: "application/json"
