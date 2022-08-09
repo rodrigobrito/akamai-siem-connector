@@ -26,13 +26,5 @@ cd ../processor-kafka
 cd ..
 
 echo
-echo Building proxy
-cd ./proxy
-
-./build.sh
-
-cd ..
-
-echo
 echo Building docker images
 docker-compose --profile build build

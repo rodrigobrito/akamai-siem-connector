@@ -1,145 +1,108 @@
 version: "3"
 
 services:
-# Base Apache kafka image to be used to construct the broker and zookeeper.
-  base-kafka:
-    build: base-kafka
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
-    profiles:
-      - build
-
-# Base consumer image used to construct Akamai SIEM consumer.
-  base-consumer:
-    build: base-consumer
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-    profiles:
-      - build
-
-# Base processor image used to constructor processors to consume Akamai SIEM events.
-  base-processor:
-    build: base-processor
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-    profiles:
-      - build
-
 # Consumer that generated mock events. Uncomment to use it.
   consumer:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-    container_name: consumer
-    hostname: consumer
 #    volumes:
 #      - ${HOME_DIR}/base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
     depends_on:
       - scheduler
-    profiles:
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
-# Consumer that collects from Akamai SIEM. Uncomment to use it.
+# Consumer that generated mock events. Uncomment to use it.
 #  consumer:
-#    build:
-#      context: consumer
-#      args:
-#        - REPOSITORY_URL=${REPOSITORY_URL}
-#        - REPOSITORY_ID=${REPOSITORY_ID}
-#        - BUILD_VERSION=${BUILD_VERSION}
 #    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
-#    container_name: consumer
-#    hostname: consumer
 #    volumes:
 #      - ~/.edgerc:/home/consumer/.edgerc
 #      - ${HOME_DIR}/consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
 #    depends_on:
 #      - scheduler
-#    profiles:
-#      - build
-#      - run
+#    deploy:
+#      mode: replicated
+#      replicas: 1
+#      placement:
+#        constraints:
+#          - node.role == manager
 
 # Processor that stores events in files. Uncomment to use it.
 #  processor:
 #    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-#    container_name: processor
-#    hostname: processor
 #    volumes:
 #      - ${HOME_DIR}/base-processor/etc/processor.conf:/home/processor/etc/processor.conf
 #    depends_on:
 #      - scheduler
-#    profiles:
-#      - run
+#    deploy:
+#      mode: replicated
+#      replicas: 1
+#      placement:
+#        constraints:
+#          - node.role == manager
 
 # Processor that stores events in Apache kafka. Uncomment to use it.
   processor:
-    build:
-      context: processor-kafka
-      args:
-        - REPOSITORY_URL=${REPOSITORY_URL}
-        - REPOSITORY_ID=${REPOSITORY_ID}
-        - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
-    container_name: processor
-    hostname: processor
 #    volumes:
 #      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
     depends_on:
       - scheduler
-    profiles:
-      - build
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 # Scheduler that defines the jobs for the consumer.
   scheduler:
-    build: scheduler
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
-    container_name: scheduler
-    hostname: scheduler
 #    ports:
 #      - "1883:1883"
 #    volumes:
 #      - ${HOME_DIR}/scheduler/etc/scheduler.conf:/home/scheduler/etc/scheduler.conf
 #      - ${HOME_DIR}/scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
-    profiles:
-      - build
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 # Zookeeper image used to control the broker instances.
   zookeeper:
-    build:
-      context: kafka/zookeeper
-      args:
-        - REPOSITORY_URL=${REPOSITORY_URL}
-        - REPOSITORY_ID=${REPOSITORY_ID}
-        - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/zookeeper:${BUILD_VERSION}
-    container_name: zookeeper
-    hostname: zookeeper
 #    ports:
 #      - "2181:2181"
 #      - "8080:8080"
 #    volumes:
 #      - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
-    profiles:
-      - run
-      - build
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 # Broker image used to receive the events collected.
   broker:
-    build:
-      context: kafka/broker
-      args:
-        - REPOSITORY_URL=${REPOSITORY_URL}
-        - REPOSITORY_ID=${REPOSITORY_ID}
-        - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
-    container_name: broker
-    hostname: broker
 #    ports:
 #      - "9092:9092"
 #    volumes:
 #      - ${HOME_DIR}/kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
     depends_on:
       - zookeeper
-    profiles:
-      - run
-      - build
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 # UI for Apache Kafka.
   broker-ui:
@@ -148,22 +111,20 @@ services:
       - KAFKA_CLUSTERS_0_NAME=broker
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
-      - SERVER_SERVLET_CONTEXT_PATH=
-    container_name: broker-ui
-    hostname: broker-ui
 #    ports:
 #      - "8080:8080"
     depends_on:
       - broker
-    profiles:
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
-# Ingress (HTTPs delivery).
+# Proxy for delivery https services.
   ingress:
-    build: ingress
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-connector-ingress:${BUILD_VERSION}
-    container_name: ingress
-    hostname: ingress
     ports:
       - "443:443"
 #    volumes:
@@ -173,21 +134,26 @@ services:
     depends_on:
       - broker-ui
       - dashboards
-    profiles:
-      - run
-      - build
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 # Logstash image used to collect the events from kafka.
   logstash:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin
-    container_name: logstash
-    hostname: logstash
     volumes:
       - ${HOME_DIR}/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - broker
-    profiles:
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
 
 # Opensearch database to store the collected events.
   opensearch:
@@ -197,8 +163,6 @@ services:
       - node.name=opensearch
       - bootstrap.memory_lock=true
       - "OPENSEARCH_JAVA_OPTS=-Xms4096m -Xmx4096m"
-    container_name: opensearch
-    hostname: opensearch
 #    ports:
 #      - "9200:9200/tcp"
 #      - "9600:9600/tcp"
@@ -209,19 +173,25 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-    profiles:
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
 
-# Opensearch dashboards image used to view/filter the collected events.
+  # Opensearch dashboards image used to view/filter the collected events.
   dashboards:
     image: opensearchproject/opensearch-dashboards:2.1.0
-    container_name: dashboards
-    hostname: dashboards
 #    ports:
 #      - "5601:5601"
     environment:
       - OPENSEARCH_HOSTS=["https://opensearch:9200"]
     depends_on:
       - opensearch
-    profiles:
-      - run
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
