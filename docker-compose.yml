@@ -179,15 +179,17 @@ services:
 
 # Logstash image used to collect the events from kafka.
   logstash:
-    image: opensearchproject/logstash-oss-with-opensearch-output-plugin
+    build: ./logstash-mssentinel
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/logstash-mssentinel:${BUILD_VERSION}
     container_name: logstash
     hostname: logstash
     volumes:
-      - ${HOME_DIR}/logstash/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - broker
     profiles:
       - run
+      - build
 
 # Opensearch database to store the collected events.
   opensearch:
