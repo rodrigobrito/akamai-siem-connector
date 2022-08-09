@@ -148,6 +148,7 @@ services:
       - KAFKA_CLUSTERS_0_NAME=broker
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      - SERVER_SERVLET_CONTEXT_PATH=
     container_name: broker-ui
     hostname: broker-ui
 #    ports:
@@ -178,7 +179,7 @@ services:
 
 # Logstash image used to collect the events from kafka.
   logstash:
-    image: docker.elastic.co/logstash/logstash-oss:7.12.1
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin
     container_name: logstash
     hostname: logstash
     volumes:
