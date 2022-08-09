@@ -180,7 +180,7 @@ services:
         constraints:
           - node.role == worker
 
-  # Opensearch dashboards image used to view/filter the collected events.
+# Opensearch dashboards image used to view/filter the collected events.
   dashboards:
     image: opensearchproject/opensearch-dashboards:2.1.0
 #    ports:
