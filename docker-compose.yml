@@ -8,41 +8,43 @@ services:
     profiles:
       - build
 
-# Base consumer image used to construct Akamai SIEM consumer.
+# Base consumer image used to construct Akamai SIEM consumer. It also generate mock events.
   base-consumer:
     build: base-consumer
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-    profiles:
-      - build
-
-# Base processor image used to constructor processors to consume Akamai SIEM events.
-  base-processor:
-    build: base-processor
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-    profiles:
-      - build
-
-# Consumer that generated mock events. Uncomment to use it.
-  consumer:
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-    container_name: consumer
-    hostname: consumer
+    container_name: base-consumer
+    hostname: base-consumer
 #    volumes:
 #      - ${HOME_DIR}/base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
     depends_on:
       - scheduler
     profiles:
+      - build
       - run
 
+# Base processor image used to constructor processors to consume Akamai SIEM events.
+  base-processor:
+    build: base-processor
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
+#    container_name: processor
+#    hostname: processor
+#    volumes:
+#      - ${HOME_DIR}/base-processor/etc/processor.conf:/home/processor/etc/processor.conf
+    depends_on:
+      - scheduler
+    profiles:
+      - build
+#      - run
+
 # Consumer that collects from Akamai SIEM. Uncomment to use it.
-#  consumer:
-#    build:
-#      context: consumer
-#      args:
-#        - REPOSITORY_URL=${REPOSITORY_URL}
-#        - REPOSITORY_ID=${REPOSITORY_ID}
-#        - BUILD_VERSION=${BUILD_VERSION}
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+  consumer:
+    build:
+      context: consumer
+      args:
+        - REPOSITORY_URL=${REPOSITORY_URL}
+        - REPOSITORY_ID=${REPOSITORY_ID}
+        - BUILD_VERSION=${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
 #    container_name: consumer
 #    hostname: consumer
 #    volumes:
@@ -50,24 +52,12 @@ services:
 #      - ${HOME_DIR}/consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
 #    depends_on:
 #      - scheduler
-#    profiles:
-#      - build
-#      - run
-
-# Processor that stores events in files. Uncomment to use it.
-#  processor:
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-#    container_name: processor
-#    hostname: processor
-#    volumes:
-#      - ${HOME_DIR}/base-processor/etc/processor.conf:/home/processor/etc/processor.conf
-#    depends_on:
-#      - scheduler
-#    profiles:
+    profiles:
+      - build
 #      - run
 
 # Processor that stores events in Apache kafka. Uncomment to use it.
-  processor:
+  processor-kafka:
     build:
       context: processor-kafka
       args:
@@ -75,8 +65,8 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
-    container_name: processor
-    hostname: processor
+    container_name: processor-kafka
+    hostname: processor-kafka
 #    volumes:
 #      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
     depends_on:
@@ -177,18 +167,31 @@ services:
       - run
       - build
 
-# Logstash image used to collect the events from kafka.
-  logstash:
-    build: ./logstash-mssentinel
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/logstash-mssentinel:${BUILD_VERSION}
-    container_name: logstash
-    hostname: logstash
+# Logstash image used to collect the events from kafka and store into opensearch.
+  logstash-opensearch:
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:latest
+    container_name: logstash-opensearch
+    hostname: logstash-opensearch
     volumes:
-      - ./logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ${HOME_DIR}/logstash-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - broker
+      - opensearch
     profiles:
       - run
+
+  # Logstash image used to collect the events from kafka and store into Microsoft Sentinel.
+  logstash-mssentinel:
+    build: logstash-mssentinel
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
+#    container_name: logstash-mssentinel
+#    hostname: logstash-mssentinel
+#    volumes:
+#      - ${HOME_DIR}/logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#    depends_on:
+#      - broker
+    profiles:
+#      - run
       - build
 
 # Opensearch database to store the collected events.
@@ -219,10 +222,10 @@ services:
     image: opensearchproject/opensearch-dashboards:2.1.0
     container_name: dashboards
     hostname: dashboards
-#    ports:
-#      - "5601:5601"
     environment:
       - OPENSEARCH_HOSTS=["https://opensearch:9200"]
+#    ports:
+#      - "5601:5601"
     depends_on:
       - opensearch
     profiles:
