@@ -7,4 +7,8 @@ $BIN_DIR/setup.sh
 su-exec root crond
 
 # Start scheduler job queue.
-/usr/sbin/mosquitto -c $ETC_DIR/mosquitto.conf
+echo "[$(date)][$HOSTNAME are now scheduling jobs]"
+
+/usr/sbin/mosquitto -c $ETC_DIR/mosquitto.conf &
+
+tail -f $LOGS_DIR/scheduler.log
