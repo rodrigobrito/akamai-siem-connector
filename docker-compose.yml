@@ -12,10 +12,13 @@ services:
   base-consumer:
     build: base-consumer
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
     container_name: base-consumer
     hostname: base-consumer
-#    volumes:
+    volumes:
 #      - ${HOME_DIR}/base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+      - consumer-logs:/home/consumer/logs
     depends_on:
       - scheduler
     profiles:
@@ -26,17 +29,21 @@ services:
   base-processor:
     build: base-processor
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-#    container_name: processor
-#    hostname: processor
-#    volumes:
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
+    container_name: base-processor
+    hostname: base-processor
+    volumes:
 #      - ${HOME_DIR}/base-processor/etc/processor.conf:/home/processor/etc/processor.conf
+      - processor-logs:/home/processor/logs
+      - processor-data:/home/processor/data
     depends_on:
       - scheduler
     profiles:
       - build
-#      - run
+      - run
 
-# Consumer that collects from Akamai SIEM. Uncomment to use it.
+# Consumer that collects from Akamai SIEM.
   consumer:
     build:
       context: consumer
@@ -45,18 +52,21 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
 #    container_name: consumer
 #    hostname: consumer
 #    volumes:
 #      - ~/.edgerc:/home/consumer/.edgerc
 #      - ${HOME_DIR}/consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+#      - consumer-logs:/home/consumer/logs
 #    depends_on:
 #      - scheduler
     profiles:
-      - build
 #      - run
+      - build
 
-# Processor that stores events in Apache kafka. Uncomment to use it.
+# Processor that stores events in Apache kafka.
   processor-kafka:
     build:
       context: processor-kafka
@@ -65,15 +75,19 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
-    container_name: processor-kafka
-    hostname: processor-kafka
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
+#    container_name: processor-kafka
+#    hostname: processor-kafka
 #    volumes:
 #      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+#      - processor-logs:/home/processor/logs
+#      - processor-data:/home/processor/data
     depends_on:
       - scheduler
     profiles:
+#      - run
       - build
-      - run
 
 # Scheduler that defines the jobs for the consumer.
   scheduler:
@@ -83,9 +97,11 @@ services:
     hostname: scheduler
 #    ports:
 #      - "1883:1883"
-#    volumes:
+    volumes:
 #      - ${HOME_DIR}/scheduler/etc/scheduler.conf:/home/scheduler/etc/scheduler.conf
 #      - ${HOME_DIR}/scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
+      - scheduler-logs:/home/scheduler/logs
+      - scheduler-data:/home/scheduler/data
     profiles:
       - build
       - run
@@ -104,14 +120,16 @@ services:
 #    ports:
 #      - "2181:2181"
 #      - "8080:8080"
-#    volumes:
+    volumes:
 #      - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
+      - zookeeper-logs:/home/kafka/logs
+      - zookeeper-data:/home/kafka/data
     profiles:
       - run
       - build
 
-# Broker image used to receive the events collected.
-  broker:
+# Apache Kafka Broker image used to receive the events collected.
+  kafka-broker:
     build:
       context: kafka/broker
       args:
@@ -119,32 +137,34 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
-    container_name: broker
-    hostname: broker
+    container_name: kafka-broker
+    hostname: kafka-broker
 #    ports:
 #      - "9092:9092"
-#    volumes:
+    volumes:
 #      - ${HOME_DIR}/kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
+      - kafka-broker-logs:/home/kafka/logs
+      - kafka-broker-data:/home/kafka/data
     depends_on:
       - zookeeper
     profiles:
       - run
       - build
 
-# UI for Apache Kafka.
-  broker-ui:
+# UI for Apache Kafka Broker.
+  kafka-broker-ui:
     image: provectuslabs/kafka-ui:latest
     environment:
-      - KAFKA_CLUSTERS_0_NAME=broker
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker:9092
+      - KAFKA_CLUSTERS_0_NAME=kafka-broker
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-broker:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
       - SERVER_SERVLET_CONTEXT_PATH=
-    container_name: broker-ui
-    hostname: broker-ui
+    container_name: kafka-broker-ui
+    hostname: kafka-broker-ui
 #    ports:
 #      - "8080:8080"
     depends_on:
-      - broker
+      - kafka-broker
     profiles:
       - run
 
@@ -156,26 +176,30 @@ services:
     hostname: ingress
     ports:
       - "443:443"
-#    volumes:
+    volumes:
 #      - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
 #      - ${HOME_DIR}/ingress/etc/ssl/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
 #      - ${HOME_DIR}/ingress/etc/ssl/nginx-selfsigned.crt:/etc/ssl/private/nginx-selfsigned.key
+      - ingress-logs:/var/log/nginx
     depends_on:
-      - broker-ui
+      - kafka-broker-ui
       - dashboards
     profiles:
       - run
       - build
 
-# Logstash image used to collect the events from kafka and store into opensearch.
+# Logstash image used to collect the events from kafka and store into opensearch. Use this only for troubleshooting or
+# testing.
   logstash-opensearch:
-    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:latest
+    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
+    environment:
+      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: logstash-opensearch
     hostname: logstash-opensearch
     volumes:
       - ${HOME_DIR}/logstash-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
-      - broker
+      - kafka-broker
       - opensearch
     profiles:
       - run
@@ -184,24 +208,26 @@ services:
   logstash-mssentinel:
     build: logstash-mssentinel
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
+#    environment:
+#      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
 #    container_name: logstash-mssentinel
 #    hostname: logstash-mssentinel
 #    volumes:
 #      - ${HOME_DIR}/logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
 #    depends_on:
-#      - broker
+#      - kafka-broker
     profiles:
 #      - run
       - build
 
-# Opensearch database to store the collected events.
+# Opensearch database to store the collected events. Use this only for troubleshooting or testing.
   opensearch:
     image: opensearchproject/opensearch:2.1.0
     environment:
       - discovery.type=single-node
       - node.name=opensearch
       - bootstrap.memory_lock=true
-      - "OPENSEARCH_JAVA_OPTS=-Xms4096m -Xmx4096m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: opensearch
     hostname: opensearch
 #    ports:
@@ -217,7 +243,7 @@ services:
     profiles:
       - run
 
-# Opensearch dashboards image used to view/filter the collected events.
+# Opensearch dashboards image used to view/filter the collected events. Use this only for troubleshooting or testing.
   dashboards:
     image: opensearchproject/opensearch-dashboards:2.1.0
     container_name: dashboards
@@ -230,3 +256,15 @@ services:
       - opensearch
     profiles:
       - run
+
+volumes:
+  consumer-logs:
+  processor-logs:
+  processor-data:
+  scheduler-logs:
+  scheduler-data:
+  ingress-logs:
+  kafka-broker-logs:
+  kafka-broker-data:
+  zookeeper-logs:
+  zookeeper-data:
