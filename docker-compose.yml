@@ -8,7 +8,7 @@ services:
     profiles:
       - build
 
-# Base consumer image used to construct Akamai SIEM consumer. It also generate mock events.
+# Base consumer image used to construct Akamai SIEM consumer. It also generates mock events.
   base-consumer:
     build: base-consumer
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
@@ -66,7 +66,7 @@ services:
 #      - run
       - build
 
-# Processor that stores events in Apache kafka.
+# Processor that stores events in Apache kafka Broker.
   processor-kafka:
     build:
       context: processor-kafka
@@ -188,8 +188,8 @@ services:
       - run
       - build
 
-# Logstash image used to collect the events from kafka and store into opensearch. Use this only for troubleshooting or
-# testing.
+# Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
+# troubleshooting or testing.
   logstash-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
     environment:
@@ -204,7 +204,7 @@ services:
     profiles:
       - run
 
-  # Logstash image used to collect the events from kafka and store into Microsoft Sentinel.
+  # Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
   logstash-mssentinel:
     build: logstash-mssentinel
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
