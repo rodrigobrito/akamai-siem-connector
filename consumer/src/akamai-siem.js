@@ -15,7 +15,7 @@ const fetchEvents = function (messageObject, settingsObject) {
             Accept: "application/json"
         },
         qs: {
-            limit: messageObject.eventsLimit,
+            limit: messageObject.eventsPerJob,
             from: messageObject.from,
             to: messageObject.to
         }
