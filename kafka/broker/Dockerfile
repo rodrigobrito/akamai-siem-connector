@@ -1,3 +1,4 @@
+# Receive build attributes.
 ARG REPOSITORY_URL
 ARG REPOSITORY_ID
 ARG BUILD_VERSION
