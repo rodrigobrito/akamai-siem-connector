@@ -41,7 +41,7 @@ const fetchEvents = async function (messageObject, settingsObject){
     return new Promise(function (resolve, reject){
         let eventsList = [];
 
-        for(let index = 0; index < messageObject.eventsLimit; index++){
+        for(let index = 0; index < messageObject.eventsPerJob; index++){
             let eventObject = {
                 key: messageObject.job + "-" + index,
                 value: JSON.stringify(eventTemplate)
