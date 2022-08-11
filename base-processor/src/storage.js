@@ -3,7 +3,7 @@ const os = require("os");
 
 const storeEvent = async function (eventsRaw, settingsObject){
     const now = new Date();
-    const filename = "/tmp/" + now.getTime() + ".json";
+    const filename = process.env.DATA_DIR + "/" + now.getTime() + ".json";
 
     utils.writeFile(filename, eventsRaw);
 
