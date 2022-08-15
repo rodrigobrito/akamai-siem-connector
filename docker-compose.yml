@@ -83,8 +83,8 @@ services:
 #      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
 #      - processor-logs:/home/processor/logs
 #      - processor-data:/home/processor/data
-    depends_on:
-      - scheduler
+#    depends_on:
+#      - scheduler
     profiles:
 #      - run
       - build
