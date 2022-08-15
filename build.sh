@@ -20,6 +20,12 @@ cd ../processor-kafka
 ./build.sh
 cd ..
 
+# Read all environment variables.
+source ./.env
+
+# Authenticate in the registry repository.
+echo $REPOSITORY_PASSWORD | docker login -u $REPOSITORY_ID $REPOSITORY_URL --password-stdin
+
 echo
 echo Building docker images...
 docker-compose --profile build build

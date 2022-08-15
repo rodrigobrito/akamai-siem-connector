@@ -10,6 +10,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: ./build.sh
+      - name: Checkout source files
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: ./build.sh
+
+      - name: Publish
+        run: ./build.sh

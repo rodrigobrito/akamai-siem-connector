@@ -30,12 +30,13 @@ If you want to collaborate in this project, reach out us by e-Mail. These are th
 - Define a retry strategy for `scheduler`, `consumer`, `processor`
 - Define the healthcheck attributes the containers images.
 - Create K8S manifests.
-- Create Terraform recipes for deployment (AWS, GCP, Azure, Linode, etc.)
+- Create Terraform recipes for deployment (AWS, GCP, Azure, Linode, etc.).
+- 
 
 ### 4. Versions
 ***
-- [`1.0.0`]() - Stable (For production use)
-- [`latest`]() - In constant improvement (For development or test use).
+- `1.0.0` - Stable (For production use)
+- `latest` - In constant improvement (For development or test use).
 
 ## 5. Pre-requisites
 ***
