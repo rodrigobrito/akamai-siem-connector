@@ -145,7 +145,7 @@ services:
 
 # Ingress (HTTPs delivery).
   ingress:
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-connector-ingress:${BUILD_VERSION}
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
     ports:
       - "443:443"
     volumes:
