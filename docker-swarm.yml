@@ -155,7 +155,7 @@ services:
       - ingress-logs:/var/log/nginx
     depends_on:
       - kafka-broker-ui
-      - dashboards
+      - opensearch-dashboards
     deploy:
       mode: replicated
       replicas: 1
@@ -223,7 +223,7 @@ services:
           - node.role == worker
 
   # Opensearch dashboards image used to view/filter the collected events. Use this only for troubleshooting or testing.
-  dashboards:
+  opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:2.1.0
     environment:
       - OPENSEARCH_HOSTS=["https://opensearch:9200"]
