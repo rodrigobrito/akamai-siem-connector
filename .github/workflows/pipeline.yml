@@ -25,4 +25,6 @@ jobs:
         run: ./build.sh
 
       - name: Publish
+        env:
+          REPOSITORY_PASSWORD: ${{ secrets.REPOSITORY_PASSWORD }}
         run: ./publish.sh
