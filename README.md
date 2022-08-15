@@ -30,8 +30,11 @@ If you want to collaborate in this project, reach out us by e-Mail. These are th
 - Define a retry strategy for `scheduler`, `consumer`, `processor`
 - Define the healthcheck attributes the containers images.
 - Create K8S manifests.
-- Create Terraform recipes for deployment (AWS, GCP, Azure, Linode, etc.).
-- 
+- Create Terraform recipes for deployment (`AWS`, `GCP`, `Azure`, `Linode`, etc.).
+- Remove high severity vulnerabilities in the containers images.
+- Add security check in the CI/CD pipeline.
+- Reduce the size of base `Apache Kafka` images.
+- Reduce the size of `Logstash` images.
 
 ### 4. Versions
 ***

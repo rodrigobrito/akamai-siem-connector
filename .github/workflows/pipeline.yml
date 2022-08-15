@@ -17,4 +17,4 @@ jobs:
         run: ./build.sh
 
       - name: Publish
-        run: ./build.sh
+        run: ./publish.sh
