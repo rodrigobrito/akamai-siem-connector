@@ -83,8 +83,8 @@ Follow this [diagram](https://viewer.diagrams.net/?tags=%7B%7D&highlight=FFFFFF&
 To define the settings of the events collect, just edit the file `scheduler/etc/scheduler.conf` and set the 
 following attributes:
 
-- `tps`: It's the number of events that should be processed per second. You can find this information analyzing the data in
-WSA.
+- `tps`: It's the number of events that should be processed per second. You can find this information analyzing the data
+in WSA.
 - `eventsPerJob`: Number of events that should be fetched per request. This information is essential to determine the
 number of requests/workers to collect the events per minute. Depending on the volumetry, you will need to scale the 
 `consumer`.
@@ -93,8 +93,8 @@ By default, the `consumer` will generate mock events. To define the credentials 
 `.edgerc` file in the home directory of `consumer`.
 
 This architecture uses [`Apache Kafka`](https://kafka.apache.org) to process/store the events collected. If you want to 
-use an external instance of `Apache Kafka`, just edit the file `processor-kafka/etc/processor.conf` and specify the connection
-attributes of the instance. Depending on the volumetry, you will need to scale the `processor`.
+use an external instance of `Apache Kafka`, just edit the file `processor-kafka/etc/processor.conf` and specify the 
+connection attributes of the instance. Depending on the volumetry, you will need to scale the `processor`.
 
 To define the customer SIEM attributes, just edit the file `logstash-<siem-identifier>/etc/logstash.conf`.
 
