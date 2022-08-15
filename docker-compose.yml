@@ -60,7 +60,8 @@ services:
 #      - ~/.edgerc:/home/consumer/.edgerc
 #      - ${HOME_DIR}/consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
 #      - consumer-logs:/home/consumer/logs
-#    depends_on:
+    depends_on:
+      - base-consumer
 #      - scheduler
     profiles:
 #      - run
@@ -83,7 +84,8 @@ services:
 #      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
 #      - processor-logs:/home/processor/logs
 #      - processor-data:/home/processor/data
-#    depends_on:
+    depends_on:
+      - base-processor
 #      - scheduler
     profiles:
 #      - run
@@ -124,6 +126,8 @@ services:
 #      - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
       - zookeeper-logs:/home/kafka/logs
       - zookeeper-data:/home/kafka/data
+    depends_on:
+      - base-kafka
     profiles:
       - run
       - build
