@@ -1,11 +1,11 @@
 ## Akamai SIEM Connector
 
-### 1. Introduction
+## 1. Introduction
 ***
 The project intends to provide a reliable, robust and scalable way for collecting security events (WAF, DDoS, BOT, etc.) 
 and easily store then into SIEMs platforms that are not supported by the connectors provided by Akamai.
 
-### 2. Motivation
+## 2. Motivation
 ***
 Customers want to access, analyze and process their security data to build reports, dashboards or even to get insights 
 in real-time to take actions in a fast manner. 
@@ -20,7 +20,7 @@ Akamai with customers' SIEM platforms, generating a lot of time consumption for 
 What if Akamai could provide an easier, simple and standard way to collect the security events, with just using few
 human-readable parameters, while optimizing the resources needed to do so?
 
-### 3. Maintainers
+## 3. Maintainers
 ***
 - [Leandro Cassiano](https://contacts.akamai.com/lcassian) - Solution Architect LATAM
 - [Felipe Vilarinho](https://contacts.akamai.com/fvilarin) - Engagement Manager LATAM
@@ -36,7 +36,7 @@ If you want to collaborate in this project, reach out us by e-Mail. These is the
 - Reduce the size of base `Apache Kafka` images.
 - Reduce the size of `Logstash` images.
 
-### 4. Versions
+## 4. Versions
 ***
 - `1.0.0` - Stable (For production use)
 - `latest` - In constant improvement (For development or test use).
