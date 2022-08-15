@@ -25,7 +25,7 @@ human-readable parameters, while optimizing the resources needed to do so?
 - [Leandro Cassiano](https://contacts.akamai.com/lcassian) - Solution Architect LATAM
 - [Felipe Vilarinho](https://contacts.akamai.com/fvilarin) - Engagement Manager LATAM
 
-If you want to collaborate in this project, reach out us by e-Mail. These are the current backlog:
+If you want to collaborate in this project, reach out us by e-Mail. These is the current backlog:
 
 - Define a retry strategy for `scheduler`, `consumer`, `processor`
 - Define the healthcheck attributes the containers images.
