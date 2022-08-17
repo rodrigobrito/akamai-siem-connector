@@ -89,8 +89,12 @@ in WSA.
 number of requests/workers to collect the events per minute. Depending on the volumetry, you will need to scale the 
 `consumer`.
 
-By default, the `consumer` will generate mock events. To define the credentials to connect in Akamai SIEM, just map the 
-`.edgerc` file in the home directory of `consumer`.
+By default, the `consumer` will generate mock events. To define the credentials to connect in Akamai SIEM, just edit the
+file `consumer/etc/consumer.conf` and set the following attributes:
+
+- `edgercFilename`: Path for the Akamai EdgeGrid credentials file. You also need to map a volume pointing to this path.
+- `edgercSection`: Identifier of the section in the `edgercFilename`.
+- `configsIds`: Identifiers of the security configs separated by comma.
 
 This architecture uses [`Apache Kafka`](https://kafka.apache.org) to process/store the events collected. If you want to 
 use an external instance of `Apache Kafka`, just edit the file `processor-kafka/etc/processor.conf` and specify the 
