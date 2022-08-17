@@ -61,7 +61,8 @@ Just execute the shell script `build.sh` to start the building process.
 - [`Docker 20.x or later`](https://docker.com)
 - `Machine with at least 4 CPU cores and 8 GB of RAM`
 
-Just execute the shell script `start.sh` to start. It will run in background.
+Just execute the shell script `start.sh` to start. You can specify a specific component to start also. Just pass the 
+name of the component after the start script. It will run in background.
 To stop, just execute shell script `stop.sh`.
 
 ### To run it in a cluster (Only Swarm mode. We are working on K8S.)
