@@ -96,9 +96,11 @@ file `consumer/etc/consumer.conf` and set the following attributes:
 - `edgercSection`: Identifier of the section in the `edgercFilename`.
 - `configsIds`: Identifiers of the security configs separated by comma.
 
-This architecture uses [`Apache Kafka`](https://kafka.apache.org) to process/store the events collected. If you want to 
-use an external instance of `Apache Kafka`, just edit the file `processor-kafka/etc/processor.conf` and specify the 
-connection attributes of the instance. Depending on the volumetry, you will need to scale the `processor`.
+By default, the `processor` will store the events in the disk (The default path of the storage is the `data` directory
+in the home directory). This architecture also supports [`Apache Kafka`](https://kafka.apache.org) to process/store the 
+events collected. If you want to use an external instance of `Apache Kafka`, just edit the file 
+`processor-kafka/etc/processor.conf` and specify the connection attributes of the instance. 
+Depending on the volumetry, you will need to scale the `processor`.
 
 To define the customer SIEM attributes, just edit the file `logstash-<siem-identifier>/etc/logstash.conf`.
 
