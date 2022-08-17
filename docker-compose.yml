@@ -52,16 +52,15 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
-    environment:
-      - NODE_OPTIONS="--max-old-space-size=1024"
+#    environment:
+#      - NODE_OPTIONS="--max-old-space-size=1024"
 #    container_name: consumer
 #    hostname: consumer
 #    volumes:
 #      - ~/.edgerc:/home/consumer/.edgerc
 #      - ${HOME_DIR}/consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
 #      - consumer-logs:/home/consumer/logs
-    depends_on:
-      - base-consumer
+#    depends_on:
 #      - scheduler
     profiles:
 #      - run
@@ -76,16 +75,15 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
-    environment:
-      - NODE_OPTIONS="--max-old-space-size=1024"
+#    environment:
+#      - NODE_OPTIONS="--max-old-space-size=1024"
 #    container_name: processor-kafka
 #    hostname: processor-kafka
 #    volumes:
 #      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
 #      - processor-logs:/home/processor/logs
 #      - processor-data:/home/processor/data
-    depends_on:
-      - base-processor
+#    depends_on:
 #      - scheduler
     profiles:
 #      - run
@@ -126,8 +124,6 @@ services:
 #      - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
       - zookeeper-logs:/home/kafka/logs
       - zookeeper-data:/home/kafka/data
-    depends_on:
-      - base-kafka
     profiles:
       - run
       - build

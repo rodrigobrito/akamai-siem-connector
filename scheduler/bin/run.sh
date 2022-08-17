@@ -11,8 +11,6 @@ if [ $consumers -lt 1 ]; then
   consumers=1
 fi
 
-echo $consumers
-
 window=$((60 / consumers))
 i=0
 

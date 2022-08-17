@@ -1,6 +1,6 @@
 FROM alpine:3.16.1
 
-# File Author / Maintainer
+# File Author / Maintainer.
 LABEL maintainer="Leandro Cassiano Alves <lcassian@akamai.com>"
 
 # Variables

@@ -1,6 +1,6 @@
 FROM nginx:stable-alpine
 
-# File Author / Maintainer
+# File Author / Maintainer,
 LABEL maintainer="Leandro Cassiano Alves <lcassian@akamai.com>"
 
 # Remove default config.

@@ -4,8 +4,12 @@ ARG REPOSITORY_ID
 ARG BUILD_VERSION
 FROM ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
 
-# File Author / Maintainer
+# File Author / Maintainer.
 LABEL maintainer="Leandro Cassiano Alves <lcassian@akamai.com>"
+
+# Environment variables.
+ENV ZOOKEEPER_HOSTNAME zookeeper
+ENV ZOOKEEPER_PORT 2181
 
 # Add default scripts and configuration files.
 ADD bin ${BIN_DIR}
