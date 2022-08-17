@@ -7,12 +7,19 @@ on:
     paths-ignore:
       - "*.md"
       - "LICENSE"
+      - "start.sh"
+      - "stop.sh"
+      - ".gitignore"
+
   pull_request:
     branches:
       - "*"
     paths-ignore:
       - "*.md"
       - "LICENSE"
+      - "start.sh"
+      - "stop.sh"
+      - ".gitignore"
 
 jobs:
   build:
