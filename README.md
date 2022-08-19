@@ -7,18 +7,35 @@ and easily store then into SIEMs platforms that are not supported by the connect
 
 ## 2. Motivation
 
-Customers want to access, analyze and process their security data to build reports, dashboards or even to get insights 
-in real-time to take actions in a fast manner. 
+Customers want to access, analyze and process their Akamai Security Data to build reports, dashboards or even to get 
+insights in real-time to take actions in a fast manner.
 
 Depending on the volume of data, this task can be hard because they'll need build a well-defined and scalable 
-infrastructure from scratch to be able to collect the data without any loss, and certainly will consume a lot of 
-resources (time and operational costs).
+infrastructure from scratch to be able to collect the data without any loss.
 
-In many projects at LATAM, we faced issues (availability and scalability of connectors) during projects to integrate 
-Akamai with customers' SIEM platforms, generating a lot of time consumption for the Akamai Professional Services team.
+In many projects at LATAM, we faced many issues such as: availability, coverage limitations and scalability of 
+connectors provided by Akamai. It generates a lot of consumption of resources (time and operational costs) from 
+customers and Akamai.
 
-What if Akamai could provide an easier, simple and standard way to collect the security events, with just using few
+What if we could provide an easier, simple and standard way to collect the security data, with just using few 
 human-readable parameters, while optimizing the resources needed to do so?
+
+Customers, with high volume (+2000 events per second) of security data, are facing issues such as unavailability and 
+scalability, as the connector responsible for collecting the data was not built to support this amount of data, and it 
+is outdated.
+
+Also, if the customer does not have Splunk, they need to provide another mechanism to ingest the data as we only support 
+Splunk and Syslog. This generates extra efforts and costs for them and for us. Our customers are very heterogeneous in 
+terms of SIEM platforms.
+
+Now that Akamai has acquired Linode, we can use it as the main platform to provide this integration as a service and 
+solve the current limitations, using a reliable, scalable and easier stack.
+
+With microservices architecture we can scale different parts of the data collection and store it directly in their SIEM 
+platform without any extra mile in the delivery.
+
+Based on their current volumetry, we can auto-setup the capacity needed for data collection and processing as well the 
+storage and provision it on Linode automatically.
 
 ## 3. Maintainers
 
