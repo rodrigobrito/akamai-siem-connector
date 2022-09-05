@@ -251,8 +251,8 @@ services:
       - "443:443"
     volumes:
 #      - ${HOME_DIR}/ingress/etc/nginx/http.d/default.conf:/etc/nginx/http.d/default.conf
-#      - ${HOME_DIR}/ingress/etc/ssl/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
-#      - ${HOME_DIR}/ingress/etc/ssl/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
+#      - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
+#      - ${HOME_DIR}/ingress/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
       - ingress-logs:/var/logs/nginx
     depends_on:
       - kafka-broker-ui
