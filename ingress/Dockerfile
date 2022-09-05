@@ -1,15 +1,35 @@
-FROM nginx:stable-alpine
+FROM alpine:3.16.1
 
 # File Author / Maintainer,
 LABEL maintainer="Leandro Cassiano Alves <lcassian@akamai.com>"
 
-# Remove default config.
-RUN rm /etc/nginx/conf.d/default.conf
+# Install the dependencies.
+RUN apk update && \
+    apk add --no-cache bash ca-certificates curl nginx
 
-# Copy configuration
-COPY etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
-COPY etc/ssl/nginx-selfsigned.crt /etc/ssl/certs/nginx-selfsigned.crt
-COPY etc/ssl/nginx-selfsigned.key /etc/ssl/private/nginx-selfsigned.key
+# Environment variables.
+ENV HOME_DIR=/home/ingress
+ENV BIN_DIR=${HOME_DIR}/bin
+ENV ETC_DIR=${HOME_DIR}/etc
+ENV LOGS_DIR=${HOME_DIR}/logs
+ENV QUEUE_DOMAIN=queue.akamai.siem
+ENV DASHBOARDS_DOMAIN=dashboards.akamai.siem
 
-# Exposed ports
-EXPOSE 443/tcp
+# Create default work structure.
+RUN mkdir -p ${HOME_DIR} ${BIN_DIR} ${ETC_DIR} ${LOGS_DIR} && \
+    rm /etc/nginx/http.d/default.conf
+
+# Adding startup and configuration files.
+ADD bin ${BIN_DIR}
+ADD etc ${ETC_DIR}
+
+# Define default permissions.
+RUN ln -s /home/ingress/etc/ssl/certs/nginx-selfsigned.crt /etc/ssl/certs/nginx-selfsigned.crt && \
+    ln -s /home/ingress/etc/ssl/private/nginx-selfsigned.key /etc/ssl/private/nginx-selfsigned.key && \
+    chmod +x ${BIN_DIR}/*.sh && \
+    ln -s ${BIN_DIR}/startup.sh /entrypoint.sh
+
+# Define default work directory.
+WORKDIR ${HOME_DIR}
+
+ENTRYPOINT [ "/entrypoint.sh" ]

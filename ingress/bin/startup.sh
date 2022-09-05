@@ -4,4 +4,6 @@
 $BIN_DIR/setup.sh
 
 # Start nginx in foreground mode.
-nginx -g daemon off
+cat $ETC_DIR/banner.txt
+echo "[$(date)][ingress started]"
+nginx -g "daemon off;"
