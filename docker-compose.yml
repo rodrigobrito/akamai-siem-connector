@@ -8,7 +8,7 @@ services:
     profiles:
       - build
 
-# Zookeeper image used to control the broker instances.
+# Zookeeper image used to control the Apache Kafka Broker instances.
   zookeeper:
     build:
       context: kafka/zookeeper
@@ -170,35 +170,83 @@ services:
 
 # Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
 # troubleshooting or testing.
-  logstash-opensearch:
+  logstash-kafka-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
     environment:
       - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
-    container_name: logstash-opensearch
-    hostname: logstash-opensearch
+    container_name: logstash-kafka-opensearch
+    hostname: logstash-kafka-opensearch
     volumes:
-      - ${HOME_DIR}/logstash-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ${HOME_DIR}/logstash-kafka-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - kafka-broker
       - opensearch
     profiles:
       - run
 
-  # Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
-  logstash-mssentinel:
-    build: logstash-mssentinel
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
+# Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
+  logstash-kafka-mssentinel:
+    build: logstash-kafka-mssentinel
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-kafka-mssentinel:${BUILD_VERSION}
 #    environment:
 #      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
-#    container_name: logstash-mssentinel
-#    hostname: logstash-mssentinel
+#      - WORKSPACE_ID=workspace_id
+#      - WORKSPACE_KEY=workspace_key
+#      - TABLE_NAME=table_name
+#    container_name: logstash-kafka-mssentinel
+#    hostname: logstash-kafka-mssentinel
 #    volumes:
-#      - ${HOME_DIR}/logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#      - ${HOME_DIR}/logstash-kafka-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
 #    depends_on:
 #      - kafka-broker
     profiles:
 #      - run
       - build
+
+# Logstash image used to collect the events from Apache Kafka Broker and store into S3 Bucket.
+#  logstash-kafka-s3:
+#    image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
+#    environment:
+#      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+#      - ENDPOINT=s3
+#    container_name: logstash-kafka-s3
+#    hostname: logstash-kafka-s3
+#    volumes:
+#      - ${HOME_DIR}/logstash-kafka-s3/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#    depends_on:
+#      - kafka-broker
+#      - opensearch
+#    profiles:
+#      - run
+
+# Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
+  logstash-kafka-mqtt:
+    build: logstash-kafka-mqtt
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-kafka-mqtt:${BUILD_VERSION}
+#    environment:
+#      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+#      - MQTT_HOSTNAME=mqtt
+#      - MQTT_PORT=1883
+#    container_name: logstash-kafka-mqtt
+#    hostname: logstash-kafka-mqtt
+#    volumes:
+#      - ${HOME_DIR}/logstash-kafka-mqtt/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#    depends_on:
+#      - kafka-broker
+#      - mqtt
+    profiles:
+#      - run
+      - build
+
+# Local MQTT server to store events from Apache Kafka Broker.
+  mqtt:
+    image: hivemq/hivemq4:latest
+    container_name: mqtt
+    hostname: mqtt
+#    ports:
+#      - "1883:1883"
+    profiles:
+      - run
 
 # Opensearch database to store the collected events. Use this only for troubleshooting or testing.
   opensearch:
@@ -211,8 +259,8 @@ services:
     container_name: opensearch
     hostname: opensearch
 #    ports:
-#      - "9200:9200/tcp"
-#      - "9600:9600/tcp"
+#      - "9200:9200"
+#      - "9600:9600"
     ulimits:
       memlock:
         soft: -1
