@@ -74,8 +74,8 @@ services:
   base-consumer:
     build: base-consumer
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-#    environment:
-#      - NODE_OPTIONS="--max-old-space-size=1024"
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
     container_name: base-consumer
     hostname: base-consumer
     volumes:
@@ -137,8 +137,8 @@ services:
         - REPOSITORY_ID=${REPOSITORY_ID}
         - BUILD_VERSION=${BUILD_VERSION}
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
-#    environment:
-#      - NODE_OPTIONS="--max-old-space-size=1024"
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
     container_name: processor-kafka
     hostname: processor-kafka
     volumes:
@@ -172,8 +172,8 @@ services:
 # troubleshooting or testing.
   logstash-kafka-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
-#    environment:
-#      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    environment:
+      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: logstash-kafka-opensearch
     hostname: logstash-kafka-opensearch
     volumes:
@@ -210,7 +210,7 @@ services:
       - discovery.type=single-node
       - node.name=opensearch
       - bootstrap.memory_lock=true
-#      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: opensearch
     hostname: opensearch
 #    ports:
@@ -246,6 +246,9 @@ services:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
     container_name: ingress
     hostname: ingress
+#    environment:
+#      - QUEUE_DOMAIN=queue.akamai.siem
+#      - DASHBOARDS_DOMAIN=dashboards.akamai.siem
     ports:
       - "80:80"
       - "443:443"

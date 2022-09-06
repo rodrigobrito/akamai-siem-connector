@@ -4,8 +4,8 @@ services:
 # Base consumer image used to construct Akamai SIEM consumer. It also generates mock events.
   base-consumer:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
-#    environment:
-#      - NODE_OPTIONS="--max-old-space-size=1024"
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
     volumes:
       - ${HOME_DIR}/base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
       - consumer-logs:/home/consumer/logs
@@ -57,8 +57,8 @@ services:
 # Processor that stores events in Apache kafka Broker.
   processor-kafka:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
-#    environment:
-#      - NODE_OPTIONS="--max-old-space-size=1024"
+    environment:
+      - NODE_OPTIONS="--max-old-space-size=1024"
     volumes:
       - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
       - processor-logs:/home/processor/logs
@@ -140,6 +140,9 @@ services:
     ports:
       - "80:80"
       - "443:443"
+#    environment:
+#      - QUEUE_DOMAIN=queue.akamai.siem
+#      - DASHBOARDS_DOMAIN=dashboards.akamai.siem
     volumes:
 #      - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
 #      - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
@@ -159,8 +162,8 @@ services:
 # troubleshooting or testing.
   logstash-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
-#    environment:
-#      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    environment:
+      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
     volumes:
       - ${HOME_DIR}/logstash-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
@@ -196,7 +199,7 @@ services:
       - discovery.type=single-node
       - node.name=opensearch
       - bootstrap.memory_lock=true
-#      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
     ulimits:
       memlock:
         soft: -1

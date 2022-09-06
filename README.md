@@ -79,7 +79,9 @@ Just execute the shell script `build.sh` to start the building process.
 - `Machine with at least 4 CPU cores and 8 GB of RAM`
 
 Just execute the shell script `start.sh` to start. You can specify a specific component to start also. Just pass the 
-name of the component after the start script. It will run in background.
+name of the component after the start script. It will run in background. After that, edit your host and point the 
+hostnames `queue.akamai.siem` and `dashboard.akamai.siem` to `127.0.0.1` and then open these hostnames in your preferred
+browser. If you want to change the hostnames, just edit the environment variables in the `ingress` service.
 To stop, just execute shell script `stop.sh`.
 
 ### To run it in a cluster (Only Swarm mode. We are working on K8S.)
@@ -91,6 +93,8 @@ Just execute the commands below in the manager/leader node of your cluster:
 
 - `source ./.env`
 - `docker stack deploy -c './docker-swarm.yml' akamai-siem-connector`
+
+Use the same procedure above to browse the hostnames after the boot.
 
 ## 6. Architeture
 
