@@ -1,6 +1,6 @@
 {
   "kafka": {
-    "brokers": "127.0.0.1:9092",
+    "brokers": "kafka-broker:9092",
     "inboundTopic": "akamai-siem",
     "outboundTopic": "akamai-siem-cef"
   }
