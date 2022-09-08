@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,14 +41,34 @@ public abstract class SettingsUtil {
 
             File settingsFile = (settingsFilepath != null ? new File(settingsFilepath) : null);
 
-            if (settingsFilepath == null || !settingsFile.exists() || !settingsFile.canRead())
+            if (settingsFilepath == null || !settingsFile.exists() || !settingsFile.canRead()) {
+                InputStream in = SettingsUtil.class.getClassLoader().getResourceAsStream(SettingsConstants.DEFAULT_SETTINGS_FILENAME);
+
+                if (in == null)
+                    throw new IOException("Settings file not found!");
+
                 settings = mapper.readValue(SettingsUtil.class.getClassLoader().getResourceAsStream(SettingsConstants.DEFAULT_SETTINGS_FILENAME), new TypeReference<Map<String, Object>>() {
                 });
+            }
             else
                 settings = mapper.readValue(new File(settingsFilepath), new TypeReference<Map<String, Object>>() {
                 });
         }
 
         return settings;
+    }
+
+    public static String getKafkaBrokers() throws IOException{
+        Map<String, Object> settingsObject = load();
+        Map<String, Object> kafkaObject = (Map<String, Object>)settings.get("kafka");
+
+        return (String)kafkaObject.get("brokers");
+    }
+
+    public static String getKafkaInboundTopic() throws IOException{
+        Map<String, Object> settingsObject = load();
+        Map<String, Object> kafkaObject = (Map<String, Object>)settings.get("kafka");
+
+        return (String)kafkaObject.get("inboundTopic");
     }
 }

@@ -5,47 +5,92 @@ package com.akamai.siem;
 
 import com.akamai.siem.constants.Constants;
 import com.akamai.siem.util.SettingsUtil;
-import com.akamai.siem.util.SparkUtil;
-import org.apache.log4j.Logger;
-import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.KafkaException;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Properties;
 
 public class App {
-    private static final Logger logger = Logger.getLogger(Constants.DEFAULT_APP_NAME);
-    private static Map<String, Object> settings = null;
+    private static final Logger logger = LogManager.getLogger(Constants.DEFAULT_APP_NAME);
+    private static Map<String, Object> settingsObject;
 
-    static {
+    static{
         try {
-            settings = SettingsUtil.load();
+            logger.info("Loading settings...");
+
+            settingsObject = SettingsUtil.load();
+
+            logger.info("Settings loaded!");
         }
         catch(IOException e){
-            logger.error(e.getMessage());
+            logger.error(e);
+
+            System.exit(1);
         }
     }
 
-    public static void main(String[] args) {
-        if(settings == null)
-            return;
+    private static Properties prepareKafkaConnectionParameters() throws IOException{
+        String brokers = SettingsUtil.getKafkaBrokers();
 
+        logger.info("Preparing the connection to " + brokers + "...");
+
+        Properties properties = new Properties();
+
+        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, SettingsUtil.getKafkaBrokers());
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, Constants.DEFAULT_APP_NAME);
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        return properties;
+    }
+
+    public void run(){
         try {
-            JavaStreamingContext context = SparkUtil.getContext();
+            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(prepareKafkaConnectionParameters());
+            String inboundTopic = SettingsUtil.getKafkaInboundTopic();
 
-            SparkUtil.getKafkaInboundStream(context).foreachRDD(rrd -> {
-                rrd.collect().forEach(message -> {
-                    System.out.println(message);
-                });
-            });
+            logger.info("Subscribing to the inbound topic " + inboundTopic + "...");
 
-            context.start();;
-            context.awaitTermination();
-        }
-        catch(InterruptedException e){
+            consumer.subscribe(Arrays.asList(inboundTopic));
 
+            logger.info("Fetching messages from the topic " + inboundTopic + "...");
+
+            while (true) {
+                try {
+                    ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+
+                    if(!records.isEmpty()) {
+                        logger.info(records.count() + " messages fetched from the topic " + inboundTopic);
+
+                        for (ConsumerRecord<String, String> record : records) {
+                            //TODO: Execute transformation using threads.
+                        }
+                    }
+                }
+                catch(KafkaException e){
+                    logger.error(e);
+
+                    break;
+                }
+            }
         }
         catch(IOException e){
-            logger.error(e.getMessage());
+            logger.error(e);
         }
+    }
+
+    public static void main(String[] args){
+        new App().run();
     }
 }

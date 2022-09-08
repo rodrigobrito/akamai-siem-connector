@@ -1,10 +1,7 @@
 {
-  "spark": {
-    "batchDuration": 10000
-  },
   "kafka": {
     "brokers": "127.0.0.1:9092",
-    "inboundTopic": "akamai-siem-json",
+    "inboundTopic": "akamai-siem",
     "outboundTopic": "akamai-siem-cef"
   }
 }
