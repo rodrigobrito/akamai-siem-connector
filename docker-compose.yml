@@ -41,8 +41,8 @@ services:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
     container_name: kafka-broker
     hostname: kafka-broker
-#    ports:
-#      - "9092:9092"
+    ports:
+      - "9092:9092"
     volumes:
       - ${HOME_DIR}/kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
       - kafka-broker-logs:/home/kafka/logs
@@ -87,7 +87,7 @@ services:
       - build
       - run
 
-# Consumer that collects from Akamai SIEM.
+  # Consumer that collects from Akamai SIEM.
   consumer:
     build:
       context: consumer
@@ -161,14 +161,15 @@ services:
       - SERVER_SERVLET_CONTEXT_PATH=
     container_name: kafka-broker-ui
     hostname: kafka-broker-ui
-#    ports:
-#      - "8080:8080"
+    ports:
+      - "8080:8080"
     depends_on:
       - kafka-broker
     profiles:
       - run
+#      - dontrun
 
-# Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
+  # Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
 # troubleshooting or testing.
   logstash-kafka-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
@@ -182,9 +183,10 @@ services:
       - kafka-broker
       - opensearch
     profiles:
-      - run
+#      - run
+      - dontrun
 
-# Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
+  # Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
   logstash-kafka-mssentinel:
     build: logstash-kafka-mssentinel
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-kafka-mssentinel:${BUILD_VERSION}
@@ -203,7 +205,7 @@ services:
 #      - run
       - build
 
-# Opensearch database to store the collected events. Use this only for troubleshooting or testing.
+  # Opensearch database to store the collected events. Use this only for troubleshooting or testing.
   opensearch:
     image: opensearchproject/opensearch:2.1.0
     environment:
@@ -224,9 +226,10 @@ services:
         soft: 65536
         hard: 65536
     profiles:
-      - run
+#      - run
+      - dontrun
 
-# Opensearch dashboards image used to view/filter the collected events. Use this only for troubleshooting or testing.
+  # Opensearch dashboards image used to view/filter the collected events. Use this only for troubleshooting or testing.
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:2.1.0
     container_name: opensearch-dashboards
@@ -238,9 +241,10 @@ services:
     depends_on:
       - opensearch
     profiles:
-      - run
+#      - run
+      - dontrun
 
-# Ingress (HTTPs delivery).
+  # Ingress (HTTPs delivery).
   ingress:
     build: ingress
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
@@ -261,7 +265,7 @@ services:
       - kafka-broker-ui
       - opensearch-dashboards
     profiles:
-      - run
+#      - run
       - build
 
 volumes:
