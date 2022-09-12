@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Calculate the number of consumers to be used based based on TPS (Events triggered per second) and the limits of events that can be fetched.
-tps=$(cat $ETC_DIR/scheduler.conf | jq -r .tps)
+tps=$(cat $ETC_DIR/settings.json | jq -r .tps)
 tpm=$((tps * 60))
-eventsPerJob=$(cat $ETC_DIR/scheduler.conf | jq -r .eventsPerJob)
-outputQueue=$(cat $ETC_DIR/scheduler.conf | jq -r .outputQueue)
+eventsPerJob=$(cat $ETC_DIR/settings.json | jq -r .eventsPerJob)
+outputQueue=$(cat $ETC_DIR/settings.json | jq -r .outputQueue)
 consumers=$((tpm / eventsPerJob))
 
 if [ $consumers -lt 1 ]; then

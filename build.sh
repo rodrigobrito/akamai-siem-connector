@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Show the banner.
+cat ./banner.txt
+
 # Build the microservices.
 echo Building base-consumer...
 cd base-consumer
@@ -18,6 +21,11 @@ cd ../base-processor
 echo
 echo Building processor-kafka...
 cd ../processor-kafka
+./build.sh
+
+echo
+echo Building json-converter...
+cd ../json-converter
 ./build.sh
 cd ..
 

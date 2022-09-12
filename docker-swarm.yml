@@ -1,13 +1,13 @@
 version: "3"
 
 services:
-# Base consumer image used to construct Akamai SIEM consumer. It also generates mock events.
+  # Base consumer image used to construct Akamai SIEM consumer. It also generates mock events.
   base-consumer:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
     environment:
       - NODE_OPTIONS="--max-old-space-size=1024"
     volumes:
-      - ${HOME_DIR}/base-consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
+      - ${HOME_DIR}/base-consumer/etc/settings.json:/home/consumer/etc/settings.json
       - consumer-logs:/home/consumer/logs
     depends_on:
       - scheduler
@@ -18,49 +18,49 @@ services:
         constraints:
           - node.role == manager
 
-# Base processor image used to constructor processors to consume Akamai SIEM events.
-#  base-processor:
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
-#    environment:
-#      - NODE_OPTIONS="--max-old-space-size=1024"
-#    volumes:
-#      - ${HOME_DIR}/base-processor/etc/processor.conf:/home/processor/etc/processor.conf
-#      - processor-logs:/home/processor/logs
-#      - processor-data:/home/processor/data
-#    depends_on:
-#      - scheduler
-#    deploy:
-#      mode: replicated
-#      replicas: 1
-#      placement:
-#        constraints:
-#          - node.role == manager
+  # Base processor image used to constructor processors to consume Akamai SIEM events.
+  # base-processor:
+  #   image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
+  #   environment:
+  #     - NODE_OPTIONS="--max-old-space-size=1024"
+  #   volumes:
+  #     - ${HOME_DIR}/base-processor/etc/settings.json:/home/processor/etc/settings.json
+  #     - processor-logs:/home/processor/logs
+  #     - processor-data:/home/processor/data
+  #   depends_on:
+  #     - scheduler
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
 
-# Consumer that collects from Akamai SIEM.
-#  consumer:
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
-#    environment:
-#      - NODE_OPTIONS="--max-old-space-size=1024"
-#    volumes:
-#      - ${HOME}/.edgerc:/home/consumer/.edgerc
-#      - ${HOME_DIR}/consumer/etc/consumer.conf:/home/consumer/etc/consumer.conf
-#      - consumer-logs:/home/consumer/logs
-#    depends_on:
-#      - scheduler
-#    deploy:
-#      mode: replicated
-#      replicas: 1
-#      placement:
-#        constraints:
-#          - node.role == manager
+  # Consumer that collects from Akamai SIEM.
+  # consumer:
+  #   image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-consumer:${BUILD_VERSION}
+  #   environment:
+  #     - NODE_OPTIONS="--max-old-space-size=1024"
+  #   volumes:
+  #     - ${HOME}/.edgerc:/home/consumer/.edgerc
+  #     - ${HOME_DIR}/consumer/etc/settings.json:/home/consumer/etc/settings.json
+  #     - consumer-logs:/home/consumer/logs
+  #   depends_on:
+  #     - scheduler
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
 
-# Processor that stores events in Apache kafka Broker.
+  # Processor that stores events in Apache kafka Broker.
   processor-kafka:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-processor-kafka:${BUILD_VERSION}
     environment:
       - NODE_OPTIONS="--max-old-space-size=1024"
     volumes:
-      - ${HOME_DIR}/processor-kafka/etc/processor.conf:/home/processor/etc/processor.conf
+      - ${HOME_DIR}/processor-kafka/etc/settings.json:/home/processor/etc/settings.json
       - processor-logs:/home/processor/logs
       - processor-data:/home/processor/data
     depends_on:
@@ -72,11 +72,31 @@ services:
         constraints:
           - node.role == manager
 
-# Scheduler that defines the jobs for the consumer.
+  # Convert events stored in json format in Apache Kafka Broker.
+  json-converter:
+    build: json-converter
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-json-converter:${BUILD_VERSION}
+    environment:
+      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    container_name: json-converter
+    hostname: json-converter
+    volumes:
+      - ${HOME_DIR}/json-converter/src/main/resources/settings.json:/home/json-converter/etc/settings.json
+      - json-converter-logs:/home/json-converter/logs
+    depends_on:
+      - kafka-broker
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+
+  # Scheduler that defines the jobs for the consumer.
   scheduler:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
     volumes:
-      - ${HOME_DIR}/scheduler/etc/scheduler.conf:/home/scheduler/etc/scheduler.conf
+      - ${HOME_DIR}/scheduler/etc/settings.json:/home/scheduler/etc/settings.json
       - ${HOME_DIR}/scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
       - scheduler-logs:/home/scheduler/logs
       - scheduler-data:/home/scheduler/data
@@ -87,7 +107,7 @@ services:
         constraints:
           - node.role == manager
 
-# Zookeeper image used to control the broker instances.
+  # Zookeeper image used to control the broker instances.
   zookeeper:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/zookeeper:${BUILD_VERSION}
     volumes:
@@ -101,7 +121,7 @@ services:
         constraints:
           - node.role == manager
 
-# Apache Kafka Broker image used to receive the events collected.
+  # Apache Kafka Broker image used to receive the events collected.
   kafka-broker:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
     volumes:
@@ -117,7 +137,7 @@ services:
         constraints:
           - node.role == manager
 
-# UI for Apache Kafka Broker.
+  # UI for Apache Kafka Broker.
   kafka-broker-ui:
     image: provectuslabs/kafka-ui:latest
     environment:
@@ -134,19 +154,19 @@ services:
         constraints:
           - node.role == manager
 
-# Ingress (HTTPs delivery).
+  # Ingress (HTTPs delivery).
   ingress:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
     ports:
       - "80:80"
       - "443:443"
-#    environment:
-#      - QUEUE_DOMAIN=queue.akamai.siem
-#      - DASHBOARDS_DOMAIN=dashboards.akamai.siem
+    # environment:
+    #   - QUEUE_DOMAIN=queue.akamai.siem
+    #   - DASHBOARDS_DOMAIN=dashboards.akamai.siem
     volumes:
-#      - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
-#      - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
-#      - ${HOME_DIR}/ingress/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
+    #   - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+    #   - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
+    #   - ${HOME_DIR}/ingress/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
       - ingress-logs:/var/log/nginx
     depends_on:
       - kafka-broker-ui
@@ -158,8 +178,8 @@ services:
         constraints:
           - node.role == manager
 
-# Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
-# troubleshooting or testing.
+  # Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
+  # troubleshooting or testing.
   logstash-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
     environment:
@@ -176,23 +196,23 @@ services:
         constraints:
           - node.role == manager
 
-# Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
-#  logstash-mssentinel:
-#    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
-#    environment:
-#      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
-#    volumes:
-#      - ${HOME_DIR}/logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-#    depends_on:
-#      - kafka-broker
-#    deploy:
-#      mode: replicated
-#      replicas: 1
-#      placement:
-#        constraints:
-#          - node.role == manager
+  # Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
+  # logstash-mssentinel:
+  #   image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
+  #   environment:
+  #     - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+  #   volumes:
+  #     - ${HOME_DIR}/logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  #   depends_on:
+  #     - kafka-broker
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.role == manager
 
-# Opensearch database to store the collected events. Use this only for troubleshooting or testing.
+  # Opensearch database to store the collected events. Use this only for troubleshooting or testing.
   opensearch:
     image: opensearchproject/opensearch:2.1.0
     environment:
@@ -232,6 +252,7 @@ volumes:
   consumer-logs:
   processor-logs:
   processor-data:
+  json-converter-logs:
   scheduler-logs:
   scheduler-data:
   ingress-logs:

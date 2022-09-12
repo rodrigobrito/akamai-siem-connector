@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Show the banner.
+cat ./banner.txt
+
 # Read all environment variables.
 source ./.env
 
