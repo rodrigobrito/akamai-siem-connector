@@ -5,6 +5,7 @@ import com.akamai.siem.constants.SettingsConstants;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,36 +28,30 @@ public abstract class SettingsUtil {
             logger.info("Loading settings...");
 
             Map<String, String> environmentMap = System.getenv();
-            String pattern = "\\$\\{([A-Za-z\\d]+)}";
-            Pattern expression = Pattern.compile(pattern);
-            Matcher matcher = expression.matcher(SettingsConstants.SETTINGS_FILEPATH);
-            String settingsFilepath = null;
+            Pattern pattern = Pattern.compile("\\$\\{(.*?)?}");
+            String settingsFilepath = SettingsConstants.SETTINGS_FILEPATH;
+            Matcher matcher = pattern.matcher(settingsFilepath);
 
-            if (matcher.matches()) {
-                settingsFilepath = SettingsConstants.SETTINGS_FILEPATH;
+            while(matcher.find()){
+                String environmentVariableExpression = matcher.group(0);
+                String environmentVariableName = matcher.group(1);
+                String environmentVariableValue = environmentMap.get(environmentVariableName);
 
-                for (int i = 0; i <= matcher.groupCount(); i++) {
-                    String environmentVariableName = matcher.group(i).toUpperCase();
-                    String environmentVariableValue = environmentMap.get(environmentVariableName);
+                if(environmentVariableValue == null)
+                    environmentVariableValue = StringUtils.EMPTY;
 
-                    if (environmentVariableValue == null)
-                        environmentVariableValue = SettingsConstants.DEFAULT_SETTINGS_FILEPATH;
-
-                    Pattern subExpression = Pattern.compile("\\$\\{".concat(matcher.group(i)).concat("\\}"));
-
-                    settingsFilepath = subExpression.matcher(settingsFilepath).replaceAll(environmentVariableValue);
-                }
+                settingsFilepath = StringUtils.replace(settingsFilepath, environmentVariableExpression, environmentVariableValue);
             }
 
-            File settingsFile = (settingsFilepath != null ? new File(settingsFilepath) : null);
+            File settingsFile = new File(settingsFilepath);
 
-            if (settingsFilepath == null || !settingsFile.exists() || !settingsFile.canRead()) {
-                InputStream in = SettingsUtil.class.getClassLoader().getResourceAsStream(SettingsConstants.DEFAULT_SETTINGS_FILENAME);
+            if (!settingsFile.exists() || !settingsFile.canRead()) {
+                InputStream in = SettingsUtil.class.getClassLoader().getResourceAsStream(SettingsConstants.DEFAULT_SETTINGS_FILEPATH);
 
                 if (in == null)
                     throw new IOException("Settings file not found!");
 
-                settings = mapper.readValue(SettingsUtil.class.getClassLoader().getResourceAsStream(SettingsConstants.DEFAULT_SETTINGS_FILENAME), JsonNode.class);
+                settings = mapper.readValue(SettingsUtil.class.getClassLoader().getResourceAsStream(SettingsConstants.DEFAULT_SETTINGS_FILEPATH), JsonNode.class);
             }
             else
                 settings = mapper.readValue(new File(settingsFilepath), JsonNode.class);
@@ -122,5 +117,10 @@ public abstract class SettingsUtil {
         JsonNode settings = load();
 
         return mapper.convertValue(settings.get(SettingsConstants.URL_ENCODED_FIELDS_ATTRIBUTE_ID), new TypeReference<>() {});
+    }
+
+    public static void main(String[] args) throws Throwable{
+        System.out.println(load());
+
     }
 }

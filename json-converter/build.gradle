@@ -28,6 +28,11 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 }
 
+jar {
+    exclude("**/bin/**")
+    exclude("**/etc/banner.txt")
+}
+
 // Test task.
 test {
     useJUnitPlatform()

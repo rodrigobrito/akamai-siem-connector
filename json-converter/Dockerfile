@@ -18,9 +18,8 @@ RUN apk update && \
 RUN mkdir -p ${HOME_DIR} ${BIN_DIR} ${ETC_DIR} ${LIBS_DIR} ${LOGS_DIR}
 
 # Setup the binary and configurations.
-ADD src/main/scripts/bin ${BIN_DIR}
-ADD src/main/resources/settings.json ${ETC_DIR}
-ADD src/main/resources/banner.txt ${ETC_DIR}
+ADD src/main/resources/bin ${BIN_DIR}
+ADD src/main/resources/etc ${ETC_DIR}
 ADD build/distributions/json-converter.zip /home
 
 RUN cd /home && \

@@ -25,7 +25,7 @@ public class ConverterUtilTest {
             jsonMessageNode = mapper.readValue(ConverterUtilTest.class.getClassLoader().getResourceAsStream("jsonMessage.json"), JsonNode.class);
             cefMessage = Files.readString(Paths.get(Objects.requireNonNull(ConverterUtilTest.class.getClassLoader().getResource("cefMessage.txt")).toURI()));
         }
-        catch(IOException | URISyntaxException e){
+         catch(IOException | URISyntaxException e){
             Assertions.fail();
         }
     }
