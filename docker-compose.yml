@@ -177,7 +177,7 @@ services:
     container_name: json-converter
     hostname: json-converter
     volumes:
-      - ${HOME_DIR}/json-converter/src/main/resources/settings.json:/home/json-converter/etc/settings.json
+      - ${HOME_DIR}/json-converter/src/main/resources/etc/settings.json:/home/json-converter/etc/settings.json
       - json-converter-logs:/home/json-converter/logs
     depends_on:
       - kafka-broker
