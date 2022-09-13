@@ -278,7 +278,7 @@ services:
       - kafka-broker-ui
       - opensearch-dashboards
     profiles:
-    #  - run
+      - run
       - build
 
 volumes:

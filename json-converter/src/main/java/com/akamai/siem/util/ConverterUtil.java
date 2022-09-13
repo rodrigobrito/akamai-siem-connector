@@ -68,7 +68,7 @@ public abstract class ConverterUtil {
 
     private static String appliedAction(JsonNode jsonNode) throws IOException{
         if(jsonNode != null) {
-            JsonNode slowPostActionNode = jsonNode.get("slowPostAction");
+            JsonNode slowPostActionNode = jsonNode.get(ConverterConstants.SLOW_POST_ACTION_ID);
 
             if (slowPostActionNode != null) {
                 String slowPostAction = slowPostActionNode.asText();
@@ -81,16 +81,16 @@ public abstract class ConverterUtil {
                 }
             }
 
-            JsonNode ruleActionsNode = jsonNode.get("ruleActions");
+            JsonNode ruleActionsNode = jsonNode.get(ConverterConstants.RULE_ACTIONS_ID);
 
             if (ruleActionsNode != null) {
                 String action = ruleActionsNode.asText();
 
-                if (SettingsUtil.getUrlEncodedFields().contains(action))
+                if (SettingsUtil.getUrlEncodedFields().contains(ConverterConstants.RULE_ACTIONS_ID))
                     action = decodeUrl(action);
 
-                if (SettingsUtil.getBase64Fields().contains(action))
-                    action = decodeBase64(ruleActionsNode.asText());
+                if (SettingsUtil.getBase64Fields().contains(ConverterConstants.RULE_ACTIONS_ID))
+                    action = decodeBase64(action);
 
                 return action;
             }
@@ -99,7 +99,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String ipv6src(String clientIp) {
+    private static String ipv6Src(String clientIp) {
         if(clientIp != null && !clientIp.isEmpty()) {
             Pattern ipv6Pattern = Pattern.compile("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
             Matcher matcher = ipv6Pattern.matcher(clientIp);
@@ -133,14 +133,14 @@ public abstract class ConverterUtil {
         String requestURL = StringUtils.EMPTY;
 
         if(jsonNode != null) {
-            JsonNode tlsNode = jsonNode.get("tls");
+            JsonNode tlsNode = jsonNode.get(ConverterConstants.TLS_ID);
 
             if (tlsNode != null && !tlsNode.asText().isEmpty())
-                requestURL = "https://";
+                requestURL = ConverterConstants.HTTPS_SCHEME_ID;
             else
-                requestURL = "http://";
+                requestURL = ConverterConstants.HTTP_SCHEME_ID;
 
-            JsonNode hostNode = jsonNode.get("host");
+            JsonNode hostNode = jsonNode.get(ConverterConstants.HOST_ID);
 
             if (hostNode != null && !hostNode.asText().isEmpty())
                 requestURL += hostNode.asText();
@@ -148,7 +148,7 @@ public abstract class ConverterUtil {
                 requestURL = StringUtils.EMPTY;
 
             if (!requestURL.isEmpty()) {
-                JsonNode pathNode = jsonNode.get("path");
+                JsonNode pathNode = jsonNode.get(ConverterConstants.PATH_ID);
 
                 if (pathNode != null && !pathNode.asText().isEmpty())
                     requestURL += pathNode.asText();
@@ -237,27 +237,27 @@ public abstract class ConverterUtil {
 
             try{
                 switch (methodName) {
-                    case "eventClassId":
+                    case ConverterConstants.EVENT_CLASS_ID:
                         attributeValue = eventClassId((JsonNode) methodParametersValues[0]);
 
                         break;
-                    case "appliedAction":
+                    case ConverterConstants.APPLIED_ACTION_ID:
                         attributeValue = appliedAction((JsonNode) methodParametersValues[0]);
 
                         break;
-                    case "name":
+                    case ConverterConstants.NAME_ID:
                         attributeValue = name((JsonNode) methodParametersValues[0]);
 
                         break;
-                    case "severity":
+                    case ConverterConstants.SEVERITY_ID:
                         attributeValue = severity((JsonNode) methodParametersValues[0]);
 
                         break;
-                    case "ipv6src":
-                        attributeValue = ipv6src((String) methodParametersValues[0]);
+                    case ConverterConstants.IPV6_SRC_ID:
+                        attributeValue = ipv6Src((String) methodParametersValues[0]);
 
                         break;
-                    case "requestURL":
+                    case ConverterConstants.REQUEST_URL_ID:
                         attributeValue = requestURL((JsonNode) methodParametersValues[0]);
 
                         break;
