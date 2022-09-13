@@ -272,6 +272,6 @@ public abstract class ConverterUtil {
             converterTemplate = StringUtils.replace(converterTemplate, expression, attributeValue);
         }
 
-        return converterTemplate;
+        return converterTemplate.replaceAll("\r", "");
     }
 }
