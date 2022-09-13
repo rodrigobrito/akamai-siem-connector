@@ -118,9 +118,4 @@ public abstract class SettingsUtil {
 
         return mapper.convertValue(settings.get(SettingsConstants.URL_ENCODED_FIELDS_ATTRIBUTE_ID), new TypeReference<>() {});
     }
-
-    public static void main(String[] args) throws Throwable{
-        System.out.println(load());
-
-    }
 }
