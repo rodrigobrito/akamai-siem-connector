@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# Download/Install all dependencies.
+# Build and test the application.
 ./gradlew clean build
