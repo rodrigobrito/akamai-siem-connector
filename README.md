@@ -3,7 +3,7 @@
 ## 1. Introduction
 
 The project intends to provide a reliable, robust and scalable way for collecting security events (WAF, DDoS, BOT, etc.) 
-and easily store then into SIEMs platforms that are not supported by the connectors provided by Akamai.
+and easily store then into SIEMs platforms.
 
 ## 2. Motivation
 
@@ -20,14 +20,16 @@ customers and Akamai.
 What if we could provide an easier, simple and standard way to collect the security data, with just using few 
 human-readable parameters, while optimizing the resources needed to do so?
 
-Customers, with high volume (+2000 events per second) of security data, are facing issues such as unavailability and 
-scalability, as the connector responsible for collecting the data was not built to support this amount of data, and it 
-is outdated.
+## 3. Scenarios
+Customers, with high volume (+5000 events per second) of security data, are facing issues such as unavailability and 
+scalability, because the connector responsible for collecting the data was not built to support this amount of data, and
+also it is outdated.
 
-Also, if the customer does not have Splunk, they need to provide another mechanism to ingest the data as we only support 
+Also, if the customer does not have Splunk, they need to provide another mechanism to ingest the data as we only support
 Splunk and Syslog. This generates extra efforts and costs for them and for us. Our customers are very heterogeneous in 
 terms of SIEM platforms.
 
+## 4. Solution
 Now that Akamai has acquired Linode, we can use it as the main platform to provide this integration as a service and 
 solve the current limitations, using a reliable, scalable and easier stack.
 
@@ -42,20 +44,15 @@ storage and provision it on Linode automatically.
 - [Leandro Cassiano](https://contacts.akamai.com/lcassian) - Solution Architect LATAM
 - [Felipe Vilarinho](https://contacts.akamai.com/fvilarin) - Engagement Manager LATAM
 
-If you want to collaborate in this project, reach out us by e-Mail. These is the current backlog:
+If you want to collaborate in this project, reach out us by e-Mail. This is the current backlog:
 
-- Define a retry strategy for `scheduler`, `consumer`, `processor`
 - Define the healthcheck attributes the containers images.
 - Create K8S manifests.
 - Create Terraform recipes for deployment (`AWS`, `GCP`, `Azure`, `Linode`, etc.).
-- Remove high severity vulnerabilities in the containers images.
 - Add security check in the CI/CD pipeline.
-- Reduce the size of base `Apache Kafka` images.
-- Reduce the size of `Logstash` images.
 
 ## 4. Versions
 
-- `1.0.0` - [![pipeline](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml/badge.svg?branch=1.0.0)](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml) - Stable (For production use)
 - `latest` - [![pipeline](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml/badge.svg?branch=main)](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml) - In constant improvement (For development or test use).
 
 ## 5. Pre-requisites
