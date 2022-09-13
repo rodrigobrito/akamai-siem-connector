@@ -27,7 +27,7 @@ public abstract class ConverterUtil {
         return new String(decodedValue, StandardCharsets.UTF_8);
     }
 
-    private static String name(JsonNode jsonNode) throws UnsupportedEncodingException {
+    private static String name(JsonNode jsonNode) throws IOException {
         if(jsonNode != null) {
             String eventClassId = eventClassId(jsonNode);
 
@@ -40,7 +40,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String severity(JsonNode jsonNode) throws UnsupportedEncodingException {
+    private static String severity(JsonNode jsonNode) throws IOException {
         if(jsonNode != null) {
             String eventClassId = eventClassId(jsonNode);
 
@@ -53,7 +53,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String eventClassId(JsonNode jsonNode) throws UnsupportedEncodingException{
+    private static String eventClassId(JsonNode jsonNode) throws IOException{
         if(jsonNode != null) {
             String action = appliedAction(jsonNode);
 
@@ -66,7 +66,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String appliedAction(JsonNode jsonNode) throws UnsupportedEncodingException{
+    private static String appliedAction(JsonNode jsonNode) throws IOException{
         if(jsonNode != null) {
             JsonNode slowPostActionNode = jsonNode.get("slowPostAction");
 
@@ -86,11 +86,11 @@ public abstract class ConverterUtil {
             if (ruleActionsNode != null) {
                 String action = ruleActionsNode.asText();
 
-                if (ConverterConstants.BASE64_FIELDS.contains(action))
-                    action = decodeBase64(ruleActionsNode.asText());
-
-                if (ConverterConstants.URLENCODED_FIELDS.contains(action))
+                if (SettingsUtil.getUrlEncodedFields().contains(action))
                     action = decodeUrl(action);
+
+                if (SettingsUtil.getBase64Fields().contains(action))
+                    action = decodeBase64(ruleActionsNode.asText());
 
                 return action;
             }
@@ -168,7 +168,7 @@ public abstract class ConverterUtil {
 
     public static String fromJson(JsonNode jsonNode) throws IOException {
         String converterTemplate = SettingsUtil.getConverterTemplate();
-        Pattern pattern = Pattern.compile("\\#\\{(.*?)?\\}");
+        Pattern pattern = Pattern.compile("#\\{(.*?)?}");
         Matcher matcher = pattern.matcher(converterTemplate);
 
         while (matcher.find()) {
@@ -182,11 +182,11 @@ public abstract class ConverterUtil {
                     String attributeValue = (attributeNode == null ? StringUtils.EMPTY : attributeNode.asText());
 
                     if(attributeValue != null && !attributeValue.isEmpty()){
-                        if(ConverterConstants.BASE64_FIELDS.contains(attributeName))
-                            attributeValue = decodeBase64(attributeValue);
-
-                        if(ConverterConstants.URLENCODED_FIELDS.contains(attributeName))
+                        if(SettingsUtil.getUrlEncodedFields().contains(attributeName))
                             attributeValue = decodeUrl(attributeValue);
+
+                        if(SettingsUtil.getBase64Fields().contains(attributeName))
+                            attributeValue = decodeBase64(attributeValue).trim();
                     }
 
                     converterTemplate = StringUtils.replace(converterTemplate, expression, attributeValue);
@@ -197,7 +197,7 @@ public abstract class ConverterUtil {
             while (converterTemplate.contains(expression));
         }
 
-        pattern = Pattern.compile("\\@\\{(.*?)\\((.*?)\\)\\}");
+        pattern = Pattern.compile("@\\{(.*?)\\((.*?)\\)}");
         matcher = pattern.matcher(converterTemplate);
 
         while (matcher.find()) {
@@ -236,20 +236,34 @@ public abstract class ConverterUtil {
             String attributeValue = null;
 
             try{
-                if(methodName.equals("eventClassId"))
-                    attributeValue = eventClassId((JsonNode) methodParametersValues[0]);
-                else if(methodName.equals("appliedAction"))
-                    attributeValue = eventClassId((JsonNode) methodParametersValues[0]);
-                else if(methodName.equals("name"))
-                    attributeValue = name((JsonNode) methodParametersValues[0]);
-                else if(methodName.equals("severity"))
-                    attributeValue = severity((JsonNode) methodParametersValues[0]);
-                else if(methodName.equals("ipv6src"))
-                    attributeValue = ipv6src((String) methodParametersValues[0]);
-                else if(methodName.equals("requestURL"))
-                    attributeValue = requestURL((JsonNode) methodParametersValues[0]);
+                switch (methodName) {
+                    case "eventClassId":
+                        attributeValue = eventClassId((JsonNode) methodParametersValues[0]);
+
+                        break;
+                    case "appliedAction":
+                        attributeValue = appliedAction((JsonNode) methodParametersValues[0]);
+
+                        break;
+                    case "name":
+                        attributeValue = name((JsonNode) methodParametersValues[0]);
+
+                        break;
+                    case "severity":
+                        attributeValue = severity((JsonNode) methodParametersValues[0]);
+
+                        break;
+                    case "ipv6src":
+                        attributeValue = ipv6src((String) methodParametersValues[0]);
+
+                        break;
+                    case "requestURL":
+                        attributeValue = requestURL((JsonNode) methodParametersValues[0]);
+
+                        break;
+                }
             }
-            catch(Throwable e){
+            catch(Throwable ignored){
             }
 
             if(attributeValue == null)

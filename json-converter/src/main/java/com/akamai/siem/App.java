@@ -1,6 +1,7 @@
 package com.akamai.siem;
 
 import com.akamai.siem.constants.Constants;
+import com.akamai.siem.constants.ConverterConstants;
 import com.akamai.siem.util.SettingsUtil;
 import com.akamai.siem.util.helpers.ConverterWorker;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -62,7 +63,7 @@ public class App {
 
         try {
             final String inboundTopic = SettingsUtil.getKafkaInboundTopic();
-            final String outboundTopic = SettingsUtil.getKafkaInboundTopic();
+            final String outboundTopic = SettingsUtil.getKafkaOutboundTopic();
 
             producer = new KafkaProducer<>(prepareKafkaProducerParameters());
             consumer = new KafkaConsumer<>(prepareKafkaConsumerParameters());
@@ -98,7 +99,7 @@ public class App {
             try {
                 converterWorkersManager.shutdown();
 
-                if(converterWorkersManager.awaitTermination(Constants.DEFAULT_TIMEOUT, TimeUnit.SECONDS))
+                if(converterWorkersManager.awaitTermination(ConverterConstants.DEFAULT_WORKERS_TIMEOUT, TimeUnit.SECONDS))
                     logger.info("Conversion workers terminated!");
                 else
                     logger.info("Termination timeout reached!");
