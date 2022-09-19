@@ -4,9 +4,12 @@
 echo "export CLICOLOR=1" > ~/.bashrc
 echo "export PS1='[\u@\h:\W]$ '" >> ~/.bashrc
 
-if [ ! -f "/etc/nginx/http.d/default.conf" ]; then
-  cp $ETC_DIR/nginx/http.d/default.conf /tmp/default.conf
-  sed -i -e 's|${QUEUE_DOMAIN}|'"$QUEUE_DOMAIN"'|g' /tmp/default.conf
-  sed -i -e 's|${DASHBOARDS_DOMAIN}|'"$DASHBOARDS_DOMAIN"'|g' /tmp/default.conf
-  cp -f /tmp/default.conf /etc/nginx/http.d/default.conf
-fi
+for file in /etc/nginx/http.d/; do
+  basename="/tmp/$(basename -- $file)"
+
+  cp "$file" $basename
+  sed -i -e 's|${QUEUE_DOMAIN}|'"$QUEUE_DOMAIN"'|g' $basename
+  sed -i -e 's|${DASHBOARDS_DOMAIN}|'"$DASHBOARDS_DOMAIN"'|g' $basename
+  cp -f $basename $file
+  rm $basename
+done
