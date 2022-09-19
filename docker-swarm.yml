@@ -165,7 +165,7 @@ services:
     #   - DASHBOARDS_DOMAIN=dashboards.akamai.siem
     volumes:
     #   - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
-    #   - ${HOME_DIR}/ingress/etc/nginx/http.d/opensearch-dashboards.conf:/etc/nginx/http.d/opensearch-dashboards.conf
+      - ${HOME_DIR}/ingress/etc/nginx/http.d/opensearch-dashboards.conf:/etc/nginx/http.d/opensearch-dashboards.conf
     #   - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
     #   - ${HOME_DIR}/ingress/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
       - ingress-logs:/var/log/nginx

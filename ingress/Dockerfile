@@ -22,12 +22,12 @@ RUN mkdir -p ${HOME_DIR} ${BIN_DIR} ${ETC_DIR} ${LOGS_DIR} && \
 # Adding startup and configuration files.
 ADD bin ${BIN_DIR}
 ADD etc/ssl ${ETC_DIR}/ssl
-ADD etc/nginx/http.d/default.conf ${ETC_DIR}/http.d/
+ADD etc/nginx/http.d/default.conf ${ETC_DIR}/nginx/http.d/
+ADD etc/banner.txt ${ETC_DIR}/
 
 # Define default permissions.
 RUN ln -s ${ETC_DIR}/ssl/certs/nginx-selfsigned.crt /etc/ssl/certs/nginx-selfsigned.crt && \
     ln -s ${ETC_DIR}/ssl/private/nginx-selfsigned.key /etc/ssl/private/nginx-selfsigned.key && \
-    ln -s ${ETC_DIR}/http.d/default.conf /etc/nginx/http.d/default.conf && \
     chmod +x ${BIN_DIR}/*.sh && \
     ln -s ${BIN_DIR}/startup.sh /entrypoint.sh
 
