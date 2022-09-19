@@ -6,28 +6,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class ConverterUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private static String decodeUrl(String encodedUrl) throws UnsupportedEncodingException {
-        String decodedUrl = java.net.URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.name());
+    public static String decodeUrl(String encodedUrl){
+        if(encodedUrl != null) {
+            String decodedUrl = java.net.URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8);
 
-        return decodedUrl.replaceAll(" ", "+");
+            return decodedUrl.replaceAll(" ", "+");
+        }
+
+        return encodedUrl;
     }
 
-    private static String decodeBase64(String encodedValue) throws IllegalArgumentException{
-        byte[] decodedValue = Base64.getMimeDecoder().decode(encodedValue);
+    public static String decodeBase64(String encodedValue){
+        if(encodedValue != null) {
+            byte[] decodedValue = Base64.getMimeDecoder().decode(encodedValue);
 
-        return new String(decodedValue, StandardCharsets.UTF_8);
+            return new String(decodedValue, StandardCharsets.UTF_8);
+        }
+
+        return null;
     }
 
-    private static String name(JsonNode jsonNode) throws IOException {
+    private static String name(JsonNode jsonNode){
         if(jsonNode != null) {
             String eventClassId = eventClassId(jsonNode);
 
@@ -40,7 +49,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String severity(JsonNode jsonNode) throws IOException {
+    private static String severity(JsonNode jsonNode){
         if(jsonNode != null) {
             String eventClassId = eventClassId(jsonNode);
 
@@ -53,7 +62,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String eventClassId(JsonNode jsonNode) throws IOException{
+    private static String eventClassId(JsonNode jsonNode){
         if(jsonNode != null) {
             String action = appliedAction(jsonNode);
 
@@ -66,7 +75,7 @@ public abstract class ConverterUtil {
         return StringUtils.EMPTY;
     }
 
-    private static String appliedAction(JsonNode jsonNode) throws IOException{
+    private static String appliedAction(JsonNode jsonNode){
         if(jsonNode != null) {
             JsonNode slowPostActionNode = jsonNode.get(ConverterConstants.SLOW_POST_ACTION_ID);
 
@@ -83,17 +92,8 @@ public abstract class ConverterUtil {
 
             JsonNode ruleActionsNode = jsonNode.get(ConverterConstants.RULE_ACTIONS_ID);
 
-            if (ruleActionsNode != null) {
-                String action = ruleActionsNode.asText();
-
-                if (SettingsUtil.getUrlEncodedFields().contains(ConverterConstants.RULE_ACTIONS_ID))
-                    action = decodeUrl(action);
-
-                if (SettingsUtil.getBase64Fields().contains(ConverterConstants.RULE_ACTIONS_ID))
-                    action = decodeBase64(action);
-
-                return action;
-            }
+            if (ruleActionsNode != null)
+                return ruleActionsNode.asText();
         }
 
         return StringUtils.EMPTY;
@@ -109,24 +109,6 @@ public abstract class ConverterUtil {
         }
 
         return StringUtils.EMPTY;
-    }
-
-    public static JsonNode getJsonAttribute(JsonNode jsonNode, String attributeName) {
-        if(jsonNode != null && attributeName != null && !attributeName.isEmpty()) {
-            String[] attributes = attributeName.split("\\.");
-            JsonNode parentNode = jsonNode;
-
-            for (String item : attributes) {
-                parentNode = parentNode.get(item);
-
-                if (parentNode == null)
-                    break;
-            }
-
-            return parentNode;
-        }
-
-        return null;
     }
 
     private static String requestURL(JsonNode jsonNode) {
@@ -160,6 +142,45 @@ public abstract class ConverterUtil {
         return requestURL;
     }
 
+    public static void decodeUrlEncodedFields(JsonNode jsonNode) throws IOException{
+        List<String> urlEncodedFields = SettingsUtil.getUrlEncodedFields();
+
+        if(urlEncodedFields != null && !urlEncodedFields.isEmpty()){
+            for(String urlEncodedField : urlEncodedFields){
+                String encodedValue = JsonNodeUtil.getAttribute(jsonNode, urlEncodedField);
+                String decodedValue = decodeUrl(encodedValue);
+
+                JsonNodeUtil.setAttribute(jsonNode, urlEncodedField, decodedValue);
+            }
+        }
+    }
+
+    public static void decodeBase64Fields(JsonNode jsonNode) throws IOException{
+        List<String> base64Fields = SettingsUtil.getBase64Fields();
+
+        if(base64Fields != null && !base64Fields.isEmpty()){
+            for(String base64Field : base64Fields){
+                String encodedValue = JsonNodeUtil.getAttribute(jsonNode, base64Field);
+                String decodedValue = decodeBase64(encodedValue);
+
+                JsonNodeUtil.setAttribute(jsonNode, base64Field, decodedValue);
+            }
+        }
+    }
+
+    public static void addFields(JsonNode jsonNode) throws IOException{
+        List<Map<String, String>> fieldsToBeAdded = SettingsUtil.getFieldsToBeAdded();
+
+        if(fieldsToBeAdded != null && !fieldsToBeAdded.isEmpty()){
+            for(Map<String, String> fieldToBeAdded : fieldsToBeAdded){
+                String name = fieldToBeAdded.get("name");
+                String value = fieldToBeAdded.get("value");
+
+                JsonNodeUtil.setAttribute(jsonNode, name, processExpressions(jsonNode, value));
+            }
+        }
+    }
+
     public static String fromJson(String jsonFormattedValue) throws IOException{
         JsonNode jsonNode = mapper.readValue(jsonFormattedValue, JsonNode.class);
 
@@ -167,111 +188,104 @@ public abstract class ConverterUtil {
     }
 
     public static String fromJson(JsonNode jsonNode) throws IOException {
-        String converterTemplate = SettingsUtil.getConverterTemplate();
-        Pattern pattern = Pattern.compile("#\\{(.*?)?}");
-        Matcher matcher = pattern.matcher(converterTemplate);
+        decodeUrlEncodedFields(jsonNode);
+        decodeBase64Fields(jsonNode);
+        addFields(jsonNode);
 
-        while (matcher.find()) {
-            String expression = matcher.group(0);
-            String attributeName = matcher.group(1);
+        String converterTemplateValue = SettingsUtil.getConverterTemplateValue();
 
-            do {
-                JsonNode attributeNode = getJsonAttribute(jsonNode, attributeName);
+        if (converterTemplateValue != null && !converterTemplateValue.isEmpty())
+            converterTemplateValue = processExpressions(jsonNode, converterTemplateValue);
+        else
+            converterTemplateValue = mapper.writeValueAsString(jsonNode);
 
-                if(attributeNode == null || attributeNode.isValueNode()) {
-                    String attributeValue = (attributeNode == null ? StringUtils.EMPTY : attributeNode.asText());
+        converterTemplateValue = converterTemplateValue.replaceAll("\r", "");
 
-                    if(attributeValue != null && !attributeValue.isEmpty()){
-                        if(SettingsUtil.getUrlEncodedFields().contains(attributeName))
-                            attributeValue = decodeUrl(attributeValue);
+        return converterTemplateValue;
+    }
 
-                        if(SettingsUtil.getBase64Fields().contains(attributeName))
-                            attributeValue = decodeBase64(attributeValue).trim();
+    private static String processExpressions(JsonNode jsonNode, String valueWithExpressions) throws IOException{
+        if(valueWithExpressions != null && !valueWithExpressions.isEmpty()) {
+            Pattern pattern = Pattern.compile("@\\{(.*?)\\((.*?)\\)}");
+            Matcher matcher = pattern.matcher(valueWithExpressions);
+
+            while (matcher.find()) {
+                String expression = matcher.group(0);
+                String methodName = matcher.group(1);
+                String[] methodParameters = matcher.group(2).split(",");
+                Object[] methodParametersValues = new Object[methodParameters.length];
+                int cont = 0;
+
+                for (String methodParameterName : methodParameters) {
+                    methodParameterName = StringUtils.replace(methodParameterName, "#{", "");
+                    methodParameterName = StringUtils.replace(methodParameterName, "}", "");
+                    methodParametersValues[cont] = JsonNodeUtil.getAttribute(jsonNode, methodParameterName);
+
+                    cont++;
+                }
+
+                String attributeValue;
+
+                try {
+                    switch (methodName) {
+                        case ConverterConstants.EVENT_CLASS_ID:
+                            attributeValue = eventClassId((JsonNode) methodParametersValues[0]);
+
+                            break;
+                        case ConverterConstants.APPLIED_ACTION_ID:
+                            attributeValue = appliedAction((JsonNode) methodParametersValues[0]);
+
+                            break;
+                        case ConverterConstants.NAME_ID:
+                            attributeValue = name((JsonNode) methodParametersValues[0]);
+
+                            break;
+                        case ConverterConstants.SEVERITY_ID:
+                            attributeValue = severity((JsonNode) methodParametersValues[0]);
+
+                            break;
+                        case ConverterConstants.IPV6_SRC_ID:
+                            attributeValue = ipv6Src((String) methodParametersValues[0]);
+
+                            break;
+                        case ConverterConstants.REQUEST_URL_ID:
+                            attributeValue = requestURL((JsonNode) methodParametersValues[0]);
+
+                            break;
+                        default:
+                            attributeValue = null;
                     }
-
-                    converterTemplate = StringUtils.replace(converterTemplate, expression, attributeValue);
                 }
-                else
-                    break;
+                catch (Throwable ignored) {
+                    attributeValue = null;
+                }
+
+                if (attributeValue == null)
+                    attributeValue = "null";
+
+                valueWithExpressions = StringUtils.replace(valueWithExpressions, expression, attributeValue);
             }
-            while (converterTemplate.contains(expression));
+
+            pattern = Pattern.compile("#\\{(.*?)?}");
+            matcher = pattern.matcher(valueWithExpressions);
+
+            while (matcher.find()) {
+                String expression = matcher.group(0);
+                String attributeName = matcher.group(1);
+                Object attributeValue = JsonNodeUtil.getAttribute(jsonNode, attributeName);
+
+                if(attributeValue == null)
+                    attributeValue = StringUtils.EMPTY;
+
+                if(attributeValue instanceof String) {
+                    do {
+                        valueWithExpressions = StringUtils.replace(valueWithExpressions, expression, (String)attributeValue);
+                    }
+                    while (valueWithExpressions.contains(expression));
+                }
+            }
         }
 
-        pattern = Pattern.compile("@\\{(.*?)\\((.*?)\\)}");
-        matcher = pattern.matcher(converterTemplate);
-
-        while (matcher.find()) {
-            String expression = matcher.group(0);
-            String methodName = matcher.group(1);
-            String[] methodParameters = matcher.group(2).split(",");
-            Object[] methodParametersValues = new Object[methodParameters.length];
-            int cont = 0;
-
-            for(String methodParameterName : methodParameters){
-                methodParameterName = StringUtils.replace(methodParameterName, "#{", "");
-                methodParameterName = StringUtils.replace(methodParameterName, "}", "");
-
-                JsonNode methodParameterNode = getJsonAttribute(jsonNode, methodParameterName);
-
-                if(methodParameterNode == null || methodParameterNode.isValueNode()) {
-                    if (methodParameterNode == null)
-                        methodParametersValues[cont] = null;
-                    else if (methodParameterNode.isBoolean())
-                        methodParametersValues[cont] = methodParameterNode.asBoolean();
-                    else if (methodParameterNode.isFloat() || methodParameterNode.isDouble() || methodParameterNode.isBigDecimal())
-                        methodParametersValues[cont] = methodParameterNode.asDouble();
-                    else if (methodParameterNode.isLong() || methodParameterNode.isBigInteger())
-                        methodParametersValues[cont] = methodParameterNode.asLong();
-                    else if (methodParameterNode.isInt())
-                        methodParametersValues[cont] = methodParameterNode.asInt();
-                    else
-                        methodParametersValues[cont] = methodParameterNode.asText();
-                }
-                else
-                    methodParametersValues[cont] = methodParameterNode;
-
-                cont++;
-            }
-
-            String attributeValue = null;
-
-            try{
-                switch (methodName) {
-                    case ConverterConstants.EVENT_CLASS_ID:
-                        attributeValue = eventClassId((JsonNode) methodParametersValues[0]);
-
-                        break;
-                    case ConverterConstants.APPLIED_ACTION_ID:
-                        attributeValue = appliedAction((JsonNode) methodParametersValues[0]);
-
-                        break;
-                    case ConverterConstants.NAME_ID:
-                        attributeValue = name((JsonNode) methodParametersValues[0]);
-
-                        break;
-                    case ConverterConstants.SEVERITY_ID:
-                        attributeValue = severity((JsonNode) methodParametersValues[0]);
-
-                        break;
-                    case ConverterConstants.IPV6_SRC_ID:
-                        attributeValue = ipv6Src((String) methodParametersValues[0]);
-
-                        break;
-                    case ConverterConstants.REQUEST_URL_ID:
-                        attributeValue = requestURL((JsonNode) methodParametersValues[0]);
-
-                        break;
-                }
-            }
-            catch(Throwable ignored){
-            }
-
-            if(attributeValue == null)
-                attributeValue = StringUtils.EMPTY;
-
-            converterTemplate = StringUtils.replace(converterTemplate, expression, attributeValue);
-        }
-
-        return converterTemplate.replaceAll("\r", "");
+        return valueWithExpressions;
     }
 }

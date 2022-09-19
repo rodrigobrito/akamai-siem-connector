@@ -3,7 +3,7 @@
     "inputQueue": "eventsToBeStored",
     "kafka": {
         "brokers": [ "kafka-broker:9092" ],
-        "topic": "akamai-siem",
+        "topic": "akamai-siem-original",
         "maxMessageSize": 16777216
     }
 }

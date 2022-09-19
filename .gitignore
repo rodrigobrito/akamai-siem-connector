@@ -6,3 +6,5 @@
 /json-to-cef-converter/.idea/
 /json-to-cef-converter/.gradle/
 /json-to-cef-converter/build/
+/.terraform.lock.hcl
+/.terraform/

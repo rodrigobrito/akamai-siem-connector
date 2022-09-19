@@ -1,8 +1,8 @@
 package com.akamai.siem;
 
+import com.akamai.siem.constants.TestConstants;
 import com.akamai.siem.util.ConverterUtil;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.akamai.siem.util.SettingsUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,16 +14,16 @@ import java.nio.file.Paths;
 import java.util.Objects;
 
 public class ConverterUtilTest {
-    private static final ObjectMapper mapper = new ObjectMapper();
-
-    private static JsonNode jsonMessageNode;
-    private static String cefMessage;
+    private static String originMessageNode;
+    private static String expectedCefMessage;
+    private static String expectedDecodedMessage;
 
     @BeforeAll
     static void loadMessages(){
         try {
-            jsonMessageNode = mapper.readValue(ConverterUtilTest.class.getClassLoader().getResourceAsStream("jsonMessage.json"), JsonNode.class);
-            cefMessage = Files.readString(Paths.get(Objects.requireNonNull(ConverterUtilTest.class.getClassLoader().getResource("cefMessage.txt")).toURI()));
+            originMessageNode = Files.readString(Paths.get(Objects.requireNonNull(ConverterUtilTest.class.getClassLoader().getResource(TestConstants.DEFAULT_ORIGINAL_MESSAGE_FILENAME)).toURI()));
+            expectedCefMessage = Files.readString(Paths.get(Objects.requireNonNull(ConverterUtilTest.class.getClassLoader().getResource(TestConstants.DEFAULT_EXPECTED_CEF_MESSAGE_FILENAME)).toURI()));
+            expectedDecodedMessage = Files.readString(Paths.get(Objects.requireNonNull(ConverterUtilTest.class.getClassLoader().getResource(TestConstants.DEFAULT_EXPECTED_DECODED_MESSAGE_FILENAME)).toURI()));
         }
          catch(IOException | URISyntaxException e){
             Assertions.fail();
@@ -31,9 +31,21 @@ public class ConverterUtilTest {
     }
 
     @Test
-    void fromJsonToCef_test(){
+    void fromJsonToCef_test() {
         try {
-            Assertions.assertEquals(cefMessage, ConverterUtil.fromJson(jsonMessageNode));
+            SettingsUtil.load(TestConstants.DEFAULT_CEF_SETTINGS_FILEPATH);
+
+            Assertions.assertEquals(expectedCefMessage, ConverterUtil.fromJson(originMessageNode));
+        }
+        catch(Throwable e){
+            Assertions.fail();
+        }
+    }
+
+    @Test
+    void decodeJsonAndEnrich_test(){
+        try {
+            Assertions.assertEquals(expectedDecodedMessage, ConverterUtil.fromJson(originMessageNode));
         }
         catch(IOException e){
             Assertions.fail();

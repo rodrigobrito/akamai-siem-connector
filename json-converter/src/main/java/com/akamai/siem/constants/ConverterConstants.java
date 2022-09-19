@@ -5,7 +5,7 @@ public abstract class ConverterConstants {
     public static final String APPLIED_ACTION_ID = "appliedAction";
     public static final String NAME_ID = "name";
     public static final String SEVERITY_ID = "severity";
-    public static final String IPV6_SRC_ID = "ipv6src";
+    public static final String IPV6_SRC_ID = "ipv6Src";
     public static final String REQUEST_URL_ID = "requestURL";
     public static final String ALERT_ID = "alert";
     public static final String MONITOR_ID = "monitor";

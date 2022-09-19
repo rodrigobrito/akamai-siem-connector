@@ -62,8 +62,12 @@ public class App {
         KafkaConsumer<String, String> consumer = null;
 
         try {
+            logger.info("Loading settings...");
+
             final String inboundTopic = SettingsUtil.getKafkaInboundTopic();
             final String outboundTopic = SettingsUtil.getKafkaOutboundTopic();
+
+            logger.info("Settings loaded!");
 
             producer = new KafkaProducer<>(prepareKafkaProducerParameters());
             consumer = new KafkaConsumer<>(prepareKafkaConsumerParameters());
