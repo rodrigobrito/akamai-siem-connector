@@ -43,7 +43,7 @@ public class ConverterUtilTest {
     }
 
     @Test
-    void decodeJsonAndEnrich_test(){
+    void decodeJsonAndEnrich_test() {
         try {
             Assertions.assertEquals(expectedDecodedMessage, ConverterUtil.fromJson(originMessageNode));
         }
