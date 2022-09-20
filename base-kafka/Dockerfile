@@ -10,7 +10,7 @@ ENV ETC_DIR=${HOME_DIR}/etc
 ENV DATA_DIR=${HOME_DIR}/data
 ENV LOGS_DIR=${HOME_DIR}/logs
 ARG SCALA_VERSION=2.13
-ARG KAFKA_VERSION=3.2.0
+ARG KAFKA_VERSION=3.2.3
 
 # Install dependencies
 RUN apk update && \
