@@ -26,7 +26,7 @@ public class ConverterUtilTest {
             expectedDecodedMessage = Files.readString(Paths.get(Objects.requireNonNull(ConverterUtilTest.class.getClassLoader().getResource(TestConstants.DEFAULT_EXPECTED_DECODED_MESSAGE_FILENAME)).toURI()));
         }
          catch(IOException | URISyntaxException e){
-            Assertions.fail(e);
+            Assertions.fail(e); 
         }
     }
 
