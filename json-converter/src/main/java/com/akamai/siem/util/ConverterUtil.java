@@ -17,13 +17,10 @@ public abstract class ConverterUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static String decodeUrl(String encodedUrl){
-        if(encodedUrl != null) {
-            String decodedUrl = java.net.URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8);
+        if(encodedUrl != null)
+            return java.net.URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8);
 
-            return decodedUrl.replaceAll(" ", "+");
-        }
-
-        return encodedUrl;
+        return null;
     }
 
     public static String decodeBase64(String encodedValue){
