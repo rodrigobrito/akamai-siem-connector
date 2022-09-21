@@ -11,15 +11,10 @@ const fetchEvents = async function (messageObject, settingsObject) {
 
             const eg = new EdgeGrid(authParams);
             const fetchEventsParams = {
-                path: "/siem/v1/configs/" + settingsObject.configsIds,
+                path: "/siem/v1/configs/" + settingsObject.configsIds + "?limit=" + messageObject.eventsPerJob + "&from=" + messageObject.from + "&to=" + messageObject.to,
                 method: "GET",
                 headers: {
                     Accept: "application/json"
-                },
-                qs: {
-                    limit: messageObject.eventsPerJob,
-                    from: messageObject.from,
-                    to: messageObject.to
                 }
             };
 
