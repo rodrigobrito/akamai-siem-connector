@@ -9,7 +9,7 @@ const mqttClient = mqtt.connect("mqtt://" + settingsObject.scheduler, {clientId:
 mqttClient.subscribe(settingsObject.inputQueue);
 
 mqttClient.on("connect",function(packet){
-    let now = new Date();
+    const now = new Date();
 
     console.log("[" + now + "][" + os.hostname() + " connected to queue " + settingsObject.inputQueue + "]");
 });
@@ -20,18 +20,19 @@ mqttClient.on("message", async function(queue, messageRaw, packet){
         const messageObject = JSON.parse(messageRaw.toString());
 
         console.log("[" + now + "][" + os.hostname() + " received the job " + messageObject.job + " from queue " + settingsObject.inputQueue + "]");
+        console.log("[" + now + "][" + os.hostname() + " fetching " + messageObject.eventsPerJob + " events for the job " + messageObject.job + " from queue " + settingsObject.inputQueue + "]");
 
         const result = akamaiSiem.fetchEvents(messageObject, settingsObject);
 
-        result.then((eventsRaw) => {
-            mqttClient.publish(settingsObject.outputQueue, eventsRaw);
+        result.then((eventsObject) => {
+            if(eventsObject){
+                mqttClient.publish(settingsObject.outputQueue, JSON.stringify(eventsObject));
 
-            now = new Date();
+                now = new Date();
 
-            console.log("[" + now + "][" + os.hostname() + " published events of job " + messageObject.job + " to queue " + settingsObject.outputQueue + "]");
-        });
-
-        result.catch((error) => console.log(error));
+                console.log("[" + now + "][" + os.hostname() + " published " + eventsObject.events.length + " events of job " + messageObject.job + " to queue " + settingsObject.outputQueue + "]");
+            }
+        }).catch((error) => console.log(error));
     }
     catch(error){
         console.log(error);

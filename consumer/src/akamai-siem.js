@@ -21,11 +21,11 @@ const fetchEvents = async function (messageObject, settingsObject) {
             eg.auth(fetchEventsParams);
             eg.send(function (error, response, body) {
                 try{
-                    if (error)
-                        return reject(error);
+                    if(error)
+                        return resolve(null);
 
-                    let eventsBuffer = body.split(linebreak);
                     let eventsList = [];
+                    const eventsBuffer = body.split(linebreak);
 
                     eventsBuffer.forEach((item, index) => {
                         if (item.length > 0 && index < (eventsBuffer.length - 1)) {
@@ -38,12 +38,12 @@ const fetchEvents = async function (messageObject, settingsObject) {
                         }
                     });
 
-                    let eventsObject = {
+                    const eventsObject = {
                         "job": messageObject.job,
                         "events": eventsList
                     };
 
-                    return resolve(JSON.stringify(eventsObject));
+                    return resolve(eventsObject);
                 }
                 catch(error){
                     return reject(error);

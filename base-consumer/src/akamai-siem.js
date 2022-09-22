@@ -57,7 +57,7 @@ const fetchEvents = async function (messageObject, settingsObject){
             "events": eventsList
         };
 
-        return resolve(JSON.stringify(eventsObject));
+        return resolve(eventsObject);
     });
 };
 

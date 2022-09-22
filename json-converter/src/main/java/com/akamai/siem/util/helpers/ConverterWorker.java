@@ -37,12 +37,12 @@ public class ConverterWorker implements Runnable{
                 value = ConverterUtil.fromJson(this.record.value());
 
                 logger.info("Message " + key + " was processed!");
-                logger.info("Pushing new value of message " + key + " to " + this.topic + "...");
+                logger.info("Pushing new value of message " + key + " to topic " + this.topic + "...");
 
                 this.producer.send(new ProducerRecord<>(this.topic, key, value));
                 this.producer.flush();
 
-                logger.info("New value of message " + key + " pushed to " + this.topic + "!");
+                logger.info("New value of message " + key + " pushed to topic " + this.topic + "!");
             }
         }
         catch(KafkaException | IOException e){

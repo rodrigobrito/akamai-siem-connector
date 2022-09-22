@@ -1,7 +1,7 @@
 const fs = require("fs");
 
 const loadFile = function (filename){
-    let raw = fs.readFileSync(filename);
+    const raw = fs.readFileSync(filename);
 
     return raw;
 };

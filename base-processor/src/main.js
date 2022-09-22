@@ -9,13 +9,13 @@ const client = mqtt.connect("mqtt://" + settingsObject.scheduler, {clientId: os.
 client.subscribe(settingsObject.inputQueue);
 
 client.on("connect",function(packet){
-    let now = new Date();
+    const now = new Date();
 
     console.log("[" + now + "][" + os.hostname() + " connected to queue " + settingsObject.inputQueue + "]");
 });
 
 client.on("message", async function(queue, messageRaw, packet){
-    storage.storeEvent(messageRaw, settingsObject);
+    storage.storeEvents(messageRaw, settingsObject);
 });
 
 client.on("error", function(error){

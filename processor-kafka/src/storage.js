@@ -1,7 +1,7 @@
 const { Kafka } = require("kafkajs");
 const os = require("os");
 
-const storeEvent = async function (eventsRaw, settingsObject){
+const storeEvents = async function (eventsRaw, settingsObject){
     try {
         const kafka = new Kafka({brokers: settingsObject.kafka.brokers});
         const producer = kafka.producer({maxBytesPerPartition: settingsObject.maxMessageSize});
@@ -16,7 +16,7 @@ const storeEvent = async function (eventsRaw, settingsObject){
             messages: eventsObject.events
         });
 
-        console.log("[" + now + "][" + os.hostname() + " stored " + eventsObject.events.length + " events of job " + eventsObject.job + " in storage topic " + settingsObject.kafka.topic + "]");
+        console.log("[" + now + "][" + os.hostname() + " stored " + eventsObject.events.length + " events of job " + eventsObject.job + " in topic " + settingsObject.kafka.topic + "]");
 
         await producer.disconnect();
     }
@@ -25,4 +25,4 @@ const storeEvent = async function (eventsRaw, settingsObject){
     }
 };
 
-module.exports = { storeEvent };
+module.exports = { storeEvents };

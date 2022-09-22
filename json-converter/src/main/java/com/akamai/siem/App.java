@@ -72,7 +72,7 @@ public class App {
             producer = new KafkaProducer<>(prepareKafkaProducerParameters());
             consumer = new KafkaConsumer<>(prepareKafkaConsumerParameters());
 
-            logger.info("Subscribing to the inbound topic " + inboundTopic + "...");
+            logger.info("Subscribing to the topic " + inboundTopic + "...");
 
             consumer.subscribe(Collections.singletonList(inboundTopic));
 
