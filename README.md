@@ -63,6 +63,8 @@ You'll need:
 ### To build
 
 - [`NodeJS 16.x or later with NPM`](https://nodejs.org)
+- [`JDK 11 or later](https://www.oracle.com/java/technologies/downloads)
+- [`Gradle 6.9.x`](https://www.gradle.org)
 - [`Docker 20.x or later`](https://docker.com)
 - `Any linux distribution` or 
 - `MacOS - Catalina or later` or 
