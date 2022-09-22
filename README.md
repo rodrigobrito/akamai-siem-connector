@@ -124,6 +124,9 @@ events collected. If you want to use an external instance of `Apache Kafka`, jus
 `processor-kafka/etc/settings.json` and specify the connection attributes of the instance. 
 Depending on the volumetry, you will need to scale the `processor`.
 
+You can also transform the data fetched (in JSON format). You can find the transformation settings in the 
+`json-converter/src/main/resources/etc/settings.json`. You can enrich the data, decode fields, and change the format (JSON -> CEF).
+
 To define the customer SIEM attributes, just edit the file `logstash-kafka-<siem-identifier>/etc/logstash.conf`.
 
 And that's it!!
