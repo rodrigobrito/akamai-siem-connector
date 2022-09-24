@@ -17,7 +17,7 @@ RUN apk update && \
     apk add --no-cache bash ca-certificates curl nss openjdk11-jre
 
 # Create default directory structure.
-RUN mkdir -p ${HOME_DIR} ${BIN_DIR} ${ETC_DIR} ${LOGS_DIR}
+RUN mkdir -p ${HOME_DIR} ${BIN_DIR} ${ETC_DIR} ${DATA_DIR} ${LOGS_DIR}
 
 # Download Kafka package.
 RUN curl https://dlcdn.apache.org/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz -o kafka.tgz && \
