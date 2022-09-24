@@ -24,8 +24,6 @@ services:
     #   - "8080:8080"
     volumes:
       - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
-      - zookeeper-logs:/home/kafka/logs
-      - zookeeper-data:/home/kafka/data
     profiles:
       - run
       - build
@@ -45,8 +43,6 @@ services:
     #   - "9092:9092"
     volumes:
       - ${HOME_DIR}/kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
-      - kafka-broker-logs:/home/kafka/logs
-      - kafka-broker-data:/home/kafka/data
     depends_on:
       - zookeeper
     profiles:
@@ -80,9 +76,6 @@ services:
     #   - "1883:1883"
     volumes:
       - ${HOME_DIR}/scheduler/etc/settings.json:/home/scheduler/etc/settings.json
-      - ${HOME_DIR}/scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
-      - scheduler-logs:/home/scheduler/logs
-      - scheduler-data:/home/scheduler/data
     profiles:
       - build
       - run
@@ -97,7 +90,6 @@ services:
     hostname: base-consumer
     volumes:
       - ${HOME_DIR}/base-consumer/etc/settings.json:/home/consumer/etc/settings.json
-      - consumer-logs:/home/consumer/logs
     depends_on:
       - scheduler
     profiles:
@@ -118,9 +110,8 @@ services:
     # container_name: consumer
     # hostname: consumer
     # volumes:
-    #   - ${HOME}/.edgerc:/home/consumer/.edgerc
+    #   - ${HOME}/.edgerc:/home/consumer/etc/.edgerc
     #   - ${HOME_DIR}/consumer/etc/settings.json:/home/consumer/etc/settings.json
-    #   - consumer-logs:/home/consumer/logs
     # depends_on:
     #   - scheduler
     profiles:
@@ -137,8 +128,6 @@ services:
     # hostname: base-processor
     # volumes:
     #   - ${HOME_DIR}/base-processor/etc/settings.json:/home/processor/etc/settings.json
-    #   - processor-logs:/home/processor/logs
-    #   - processor-data:/home/processor/data
     # depends_on:
     #   - scheduler
     profiles:
@@ -160,8 +149,6 @@ services:
     hostname: processor-kafka
     volumes:
       - ${HOME_DIR}/processor-kafka/etc/settings.json:/home/processor/etc/settings.json
-      - processor-logs:/home/processor/logs
-      - processor-data:/home/processor/data
     depends_on:
       - scheduler
     profiles:
@@ -173,12 +160,11 @@ services:
     build: json-converter
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-json-converter:${BUILD_VERSION}
     environment:
-      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - "JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: json-converter
     hostname: json-converter
     volumes:
       - ${HOME_DIR}/json-converter/src/main/resources/etc/settings.json:/home/json-converter/etc/settings.json
-      - json-converter-logs:/home/json-converter/logs
     depends_on:
       - kafka-broker
     profiles:
@@ -272,25 +258,11 @@ services:
     volumes:
 #      - ${HOME_DIR}/ingress/etc/nginx/http.d/default.conf:/home/ingress/etc/nginx/http.d/default.conf
       - ${HOME_DIR}/ingress/etc/nginx/http.d/opensearch-dashboards.conf:/home/ingress/etc/nginx/http.d/opensearch-dashboards.conf
-#      - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
-#      - ${HOME_DIR}/ingress/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
-      - ingress-logs:/var/logs/nginx
+#      - ${HOME_DIR}/ingress/etc/ssl/certs/cert.crt:/home/ingress/etc/ssl/certs/cert.crt
+#      - ${HOME_DIR}/ingress/etc/ssl/private/cert.key:/home/ingress/etc/ssl/private/cert.key
     depends_on:
       - kafka-broker-ui
       - opensearch-dashboards
     profiles:
       - run
       - build
-
-volumes:
-  consumer-logs:
-  processor-logs:
-  processor-data:
-  json-converter-logs:
-  scheduler-logs:
-  scheduler-data:
-  ingress-logs:
-  kafka-broker-logs:
-  kafka-broker-data:
-  zookeeper-logs:
-  zookeeper-data:

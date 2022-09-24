@@ -26,8 +26,8 @@ ADD etc/nginx/http.d/default.conf ${ETC_DIR}/nginx/http.d/
 ADD etc/banner.txt ${ETC_DIR}/
 
 # Define default permissions.
-RUN ln -s ${ETC_DIR}/ssl/certs/nginx-selfsigned.crt /etc/ssl/certs/nginx-selfsigned.crt && \
-    ln -s ${ETC_DIR}/ssl/private/nginx-selfsigned.key /etc/ssl/private/nginx-selfsigned.key && \
+RUN ln -s ${ETC_DIR}/ssl/certs/cert.crt /etc/ssl/certs/cert.crt && \
+    ln -s ${ETC_DIR}/ssl/private/cert.key /etc/ssl/private/cert.key && \
     chmod +x ${BIN_DIR}/*.sh && \
     ln -s ${BIN_DIR}/startup.sh /entrypoint.sh
 

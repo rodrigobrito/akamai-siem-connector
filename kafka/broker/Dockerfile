@@ -8,8 +8,8 @@ FROM ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
 LABEL maintainer="Leandro Cassiano Alves <lcassian@akamai.com>"
 
 # Environment variables.
-ENV ZOOKEEPER_HOSTNAME zookeeper
-ENV ZOOKEEPER_PORT 2181
+ENV ZOOKEEPER_SERVICE_HOST zookeeper
+ENV ZOOKEEPER_SERVICE_PORT 2181
 
 # Add default scripts and configuration files.
 ADD bin ${BIN_DIR}

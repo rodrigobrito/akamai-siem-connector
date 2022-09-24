@@ -8,7 +8,6 @@ services:
       - NODE_OPTIONS="--max-old-space-size=1024"
     volumes:
       - ${HOME_DIR}/base-consumer/etc/settings.json:/home/consumer/etc/settings.json
-      - consumer-logs:/home/consumer/logs
     depends_on:
       - scheduler
     deploy:
@@ -25,8 +24,6 @@ services:
   #     - NODE_OPTIONS="--max-old-space-size=1024"
   #   volumes:
   #     - ${HOME_DIR}/base-processor/etc/settings.json:/home/processor/etc/settings.json
-  #     - processor-logs:/home/processor/logs
-  #     - processor-data:/home/processor/data
   #   depends_on:
   #     - scheduler
   #   deploy:
@@ -34,7 +31,7 @@ services:
   #     replicas: 1
   #     placement:
   #       constraints:
-  #         - node.role == manager
+  #         - node.role == worker
 
   # Consumer that collects from Akamai SIEM.
   # consumer:
@@ -42,9 +39,8 @@ services:
   #   environment:
   #     - NODE_OPTIONS="--max-old-space-size=1024"
   #   volumes:
-  #     - ${HOME}/.edgerc:/home/consumer/.edgerc
+  #     - ${HOME}/.edgerc:/home/consumer/etc/.edgerc
   #     - ${HOME_DIR}/consumer/etc/settings.json:/home/consumer/etc/settings.json
-  #     - consumer-logs:/home/consumer/logs
   #   depends_on:
   #     - scheduler
   #   deploy:
@@ -61,8 +57,6 @@ services:
       - NODE_OPTIONS="--max-old-space-size=1024"
     volumes:
       - ${HOME_DIR}/processor-kafka/etc/settings.json:/home/processor/etc/settings.json
-      - processor-logs:/home/processor/logs
-      - processor-data:/home/processor/data
     depends_on:
       - scheduler
     deploy:
@@ -70,19 +64,18 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == manager
+          - node.role == worker
 
   # Convert events stored in json format in Apache Kafka Broker.
   json-converter:
     build: json-converter
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-json-converter:${BUILD_VERSION}
     environment:
-      - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      - "JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: json-converter
     hostname: json-converter
     volumes:
       - ${HOME_DIR}/json-converter/src/main/resources/etc/settings.json:/home/json-converter/etc/settings.json
-      - json-converter-logs:/home/json-converter/logs
     depends_on:
       - kafka-broker
     deploy:
@@ -97,9 +90,6 @@ services:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
     volumes:
       - ${HOME_DIR}/scheduler/etc/settings.json:/home/scheduler/etc/settings.json
-      - ${HOME_DIR}/scheduler/etc/mosquitto.conf:/home/schedyler/etc/mosquitto.conf
-      - scheduler-logs:/home/scheduler/logs
-      - scheduler-data:/home/scheduler/data
     deploy:
       mode: replicated
       replicas: 1
@@ -112,8 +102,6 @@ services:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/zookeeper:${BUILD_VERSION}
     volumes:
       - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
-      - zookeeper-logs:/home/kafka/logs
-      - zookeeper-data:/home/kafka/data
     deploy:
       mode: replicated
       replicas: 1
@@ -126,8 +114,6 @@ services:
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/kafka-broker:${BUILD_VERSION}
     volumes:
       - ${HOME_DIR}/kafka/broker/etc/server.properties:/home/kafka/etc/server.properties
-      - kafka-broker-logs:/home/kafka/logs
-      - kafka-broker-data:/home/kafka/data
     depends_on:
       - zookeeper
     deploy:
@@ -154,39 +140,14 @@ services:
         constraints:
           - node.role == manager
 
-  # Ingress (HTTPs delivery).
-  ingress:
-    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
-    ports:
-      - "80:80"
-      - "443:443"
-    # environment:
-    #   - QUEUE_DOMAIN=queue.akamai.siem
-    #   - DASHBOARDS_DOMAIN=dashboards.akamai.siem
-    volumes:
-    #   - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
-      - ${HOME_DIR}/ingress/etc/nginx/http.d/opensearch-dashboards.conf:/etc/nginx/http.d/opensearch-dashboards.conf
-    #   - ${HOME_DIR}/ingress/etc/ssl/certs/nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt
-    #   - ${HOME_DIR}/ingress/etc/ssl/private/nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key
-      - ingress-logs:/var/log/nginx
-    depends_on:
-      - kafka-broker-ui
-      - opensearch-dashboards
-    deploy:
-      mode: replicated
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-
   # Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
   # troubleshooting or testing.
-  logstash-opensearch:
+  logstash-kafka-opensearch:
     image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
     environment:
       - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
     volumes:
-      - ${HOME_DIR}/logstash-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ${HOME_DIR}/logstash-kafka-opensearch/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     depends_on:
       - kafka-broker
       - opensearch
@@ -198,12 +159,12 @@ services:
           - node.role == worker
 
   # Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
-  # logstash-mssentinel:
-  #   image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-mssentinel:${BUILD_VERSION}
+  # logstash-kafka-mssentinel:
+  #   image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-kafka-mssentinel:${BUILD_VERSION}
   #   environment:
   #     - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
   #   volumes:
-  #     - ${HOME_DIR}/logstash-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  #     - ${HOME_DIR}/logstash-kafka-mssentinel/etc/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
   #   depends_on:
   #     - kafka-broker
   #   deploy:
@@ -211,7 +172,7 @@ services:
   #     replicas: 1
   #     placement:
   #       constraints:
-  #         - node.role == manager
+  #         - node.role == worker
 
   # Opensearch database to store the collected events. Use this only for troubleshooting or testing.
   opensearch:
@@ -247,17 +208,28 @@ services:
       replicas: 1
       placement:
         constraints:
-          - node.role == worker
+          - node.role == manager
 
-volumes:
-  consumer-logs:
-  processor-logs:
-  processor-data:
-  json-converter-logs:
-  scheduler-logs:
-  scheduler-data:
-  ingress-logs:
-  kafka-broker-logs:
-  kafka-broker-data:
-  zookeeper-logs:
-  zookeeper-data:
+  # Ingress (HTTP/HTTPs delivery).
+  ingress:
+    image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
+    ports:
+      - "80:80"
+      - "443:443"
+    # environment:
+    #   - QUEUE_DOMAIN=queue.akamai.siem
+    #   - DASHBOARDS_DOMAIN=dashboards.akamai.siem
+    volumes:
+    #   - ${HOME_DIR}/ingress/etc/nginx/conf.d/default.conf:/home/ingress/etc/nginx/conf.d/default.conf
+      - ${HOME_DIR}/ingress/etc/nginx/http.d/opensearch-dashboards.conf:/home/ingress/etc/nginx/http.d/opensearch-dashboards.conf
+    #   - ${HOME_DIR}/ingress/etc/ssl/certs/cert.crt:/home/ingress/etc/ssl/certs/cert.crt
+    #   - ${HOME_DIR}/ingress/etc/ssl/private/cert.key:/home/ingress/etc/ssl/private/cert.key
+    depends_on:
+      - kafka-broker-ui
+      - opensearch-dashboards
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager

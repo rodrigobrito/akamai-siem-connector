@@ -2,7 +2,7 @@
     "scheduler": "scheduler",
     "inputQueue": "jobsToBeProcessed",
     "outputQueue": "eventsToBeStored",
-    "edgercFilename": "~/.edgerc",
+    "edgercFilename": "/home/consumer/etc/.edgerc",
     "edgercSection": "default",
     "configsIds": "<comma-separared-configs-ids>"
 }
