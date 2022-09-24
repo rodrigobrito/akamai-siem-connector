@@ -32,17 +32,17 @@ public class ConverterWorker implements Runnable{
             String value = this.record.value();
 
             if(value != null && !value.isEmpty()) {
-                logger.info("Processing message " + key + "...");
+                logger.debug("Processing message " + key + "...");
 
                 value = ConverterUtil.fromJson(this.record.value());
 
-                logger.info("Message " + key + " was processed!");
-                logger.info("Pushing new value of message " + key + " to topic " + this.topic + "...");
+                logger.debug("Message " + key + " was processed!");
+                logger.debug("Pushing new value of message " + key + " to topic " + this.topic + "...");
 
                 this.producer.send(new ProducerRecord<>(this.topic, key, value));
                 this.producer.flush();
 
-                logger.info("New value of message " + key + " pushed to topic " + this.topic + "!");
+                logger.debug("New value of message " + key + " pushed to topic " + this.topic + "!");
             }
         }
         catch(KafkaException | IOException e){
