@@ -27,7 +27,7 @@ fi
 source ./.env
 
 # Authenticate in the docker registry repository.
-echo $REPOSITORY_PASSWORD | $DOCKER_CMD login -u $REPOSITORY_ID $REPOSITORY_URL --password-stdin
+echo $REPOSITORY_PASSWORD | $DOCKER_CMD login -u $REPOSITORY_ID $REPOSITORY_URL --password-stdin || exit 1
 
 # Publish the container images in the docker registry repository.
 $DOCKER_COMPOSE_CMD --profile build push

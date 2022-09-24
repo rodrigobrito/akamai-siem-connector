@@ -34,27 +34,27 @@ fi
 # Build the services.
 echo Building base-consumer...
 cd base-consumer
-./build.sh
+./build.sh || exit 1
 
 echo
 echo Building consumer...
 cd ../consumer
-./build.sh
+./build.sh || exit 1
 
 echo
 echo Building base-processor...
 cd ../base-processor
-./build.sh
+./build.sh || exit 1
 
 echo
 echo Building processor-kafka...
 cd ../processor-kafka
-./build.sh
+./build.sh || exit 1
 
 echo
 echo Building json-converter...
 cd ../json-converter
-./build.sh
+./build.sh || exit 1
 cd ..
 
 # Build the container images.

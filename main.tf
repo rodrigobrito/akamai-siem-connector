@@ -1,3 +1,4 @@
+# Define the required providers for Linode provisioning.
 terraform {
   required_providers {
     linode = {
@@ -6,10 +7,12 @@ terraform {
   }
 }
 
+# Define Linode credentials.
 provider "linode" {
   token = var.linode_token
 }
 
+# Define the Linode Kubernetes Engine provisioning.
 resource "linode_lke_cluster" "akamai-siem-connector" {
   label       = "akamai-siem-connector"
   k8s_version = "1.23"
@@ -22,12 +25,14 @@ resource "linode_lke_cluster" "akamai-siem-connector" {
   }
 }
 
+# Create the Kubernetes configuration file to be able to connect in the cluster after the provisioning.
 resource "local_file" "kubeconfig-creation" {
   filename = "kubeconfig"
   content_base64 = linode_lke_cluster.akamai-siem-connector.kubeconfig
   depends_on = [ linode_lke_cluster.akamai-siem-connector ]
 }
 
+# Setup the cluster nodes.
 resource "null_resource" "setup-nodes" {
   triggers = {
     always_run = "${timestamp()}"
@@ -42,6 +47,7 @@ resource "null_resource" "setup-nodes" {
   depends_on = [ local_file.kubeconfig-creation ]
 }
 
+# Apply the settings.
 resource "null_resource" "apply-settings" {
   triggers = {
     always_run = "${timestamp()}"

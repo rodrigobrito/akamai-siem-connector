@@ -19,10 +19,10 @@ fi
 VARIABLES="-var linode_token=$LINODE_TOKEN"
 
 # Initialize terraform (download the last version of providers & modules).
-$TERRAFORM_CMD init --upgrade
+$TERRAFORM_CMD init --upgrade || exit 1
 
 # Check if the recipe is valid.
-$TERRAFORM_CMD plan $VARIABLES
+$TERRAFORM_CMD plan $VARIABLES || exit 1
 
 # Apply the recipe to provision the infrastructure.
 $TERRAFORM_CMD apply $VARIABLES --auto-approve
