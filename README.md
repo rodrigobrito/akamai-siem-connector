@@ -44,12 +44,7 @@ storage and provision it on Linode automatically.
 - [Leandro Cassiano](https://contacts.akamai.com/lcassian) - Solution Architect LATAM
 - [Felipe Vilarinho](https://contacts.akamai.com/fvilarin) - Engagement Manager LATAM
 
-If you want to collaborate in this project, reach out us by e-Mail. This is the current backlog:
-
-- Define the healthcheck attributes the containers images.
-- Create K8S manifests.
-- Create Terraform recipes for deployment (`AWS`, `GCP`, `Azure`, `Linode`, etc.).
-- Add security check in the CI/CD pipeline.
+If you want to collaborate in this project, reach out us by e-Mail.
 
 ## 6. Versions
 
@@ -66,35 +61,62 @@ You'll need:
 - [`JDK 11 or later`](https://www.oracle.com/java/technologies/downloads)
 - [`Gradle 6.9.x`](https://www.gradle.org)
 - [`Docker 20.x or later`](https://docker.com)
-- `Any linux distribution` or 
+- [`Docker Comose 2.10.x or later`](https://docs.docker.com/compose/install/)
+- `Any linux distribution with Kernel 5.x or later` or 
 - `MacOS - Catalina or later` or 
-- `MS-Windows with WSL2`
-- `Machine with at least 4 CPU cores and 8 GB of RAM`
+- `MS-Windows 10 or later with WSL2`
+- `Dedicated machine with at least 4 CPU cores and 8 GB of RAM`
 
 Just execute the shell script `build.sh` to start the building process.
 
 ### To run it locally (In your machine or in a standalone environment)
 
 - [`Docker 20.x or later`](https://docker.com)
-- `Machine with at least 4 CPU cores and 8 GB of RAM`
+- [`Docker Comose 2.10.x or later`](https://docs.docker.com/compose/install/)
+- `Any linux distribution with Kernel 5.x or later` or
+- `MacOS - Catalina or later` or
+- `MS-Windows 10 or later with WSL2`
+- `Dedicated machine with at least 4 CPU cores and 8 GB of RAM`
 
 Just execute the shell script `start.sh` to start. You can specify a specific component to start also. Just pass the 
-name of the component after the start script. It will run in background. After that, edit your host and point the 
+name of the component after the start script. 
+
+It will run in background. After the start, edit your host and point the 
 hostnames `queue.akamai.siem` and `dashboard.akamai.siem` to `127.0.0.1` and then open these hostnames in your preferred
-browser. If you want to change the hostnames, just edit the environment variables in the `ingress` service.
+browser. 
+
+If you want to change the hostnames, just edit the environment variables in the `ingress` service.
 To stop, just execute shell script `stop.sh`.
 
-### To run it in a cluster (Only Swarm mode. We are working on K8S.)
+### To run it in Linode Kubernetes Engine.
 
-- [`Docker 20.x or later`](https://docker.com) or
-- `Provisioned Swarm node with as least 1 node with 4 CPU cores and 8 GB of RAM`
+- [`Terraform 1.3.x or later`](https://www.terraform.io)
+- [`kubectl 4.5.x or later`](https://kubernetes.io/docs/tasks/tools/)
 
-Just execute the commands below in the manager/leader node of your cluster:
+First you need to create your Linode credentials. To do that, just log in [`Linode Panel`](https://cloud.linode.com)
+and access `Your Profile` -> `API Tokens` -> `Create a Personal Access Token`.
 
-- `source ./.env`
-- `docker stack deploy -c './docker-swarm.yml' akamai-siem-connector`
+Define a label as you wish, the expiration period and the permissions. Make sure that you select the Kubernetes
+permission. After that just click in the `Create Token` button.
 
-Use the same procedure above to browse the hostnames after the boot.
+Once the token is created, copy the value and define an environment variable `LINODE_TOKEN` with the copied value in 
+your machine.
+
+After this preparation, you just need to execute the shell script `deploy.sh` to start the provisioning. You can modify
+the provisioning definition by editing the `variable.tf` file. You can define the region of your cluster
+(default is `us-east`), the nodes types (default is 4 Cores, 8 GB RAM and 160 GB od disk) and the number of nodes
+(default is 2).
+
+After the provisioning finished, get the IPs of the cluster nodes through the `Linode Portal` or execute the following
+commands:
+- `export KUBECONFIG=./kubeconfig`
+- `kubectl get nodes -o wide`
+
+After the start, edit your host and point the hostnames `queue.akamai.siem` and `dashboard.akamai.siem` to the 
+provisioned IPs and then open these hostnames in your preferred browser.
+
+If you want to change the hostnames, just edit the environment variables in the `ingress` service.
+To stop, just execute shell script `undeploy.sh`.
 
 ## 8. Architeture
 
@@ -125,7 +147,8 @@ events collected. If you want to use an external instance of `Apache Kafka`, jus
 Depending on the volumetry, you will need to scale the `processor`.
 
 You can also transform the data fetched (in JSON format). You can find the transformation settings in the 
-`json-converter/src/main/resources/etc/settings.json`. You can enrich the data, decode fields, and change the format (JSON -> CEF).
+`json-converter/src/main/resources/etc/settings.json`. You can enrich the data, decode fields, and change the format 
+(JSON -> CEF or any other format that you want).
 
 To define the customer SIEM attributes, just edit the file `logstash-kafka-<siem-identifier>/etc/logstash.conf`.
 

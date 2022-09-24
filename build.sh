@@ -1,9 +1,37 @@
 #!/bin/bash
 
 # Show the banner.
-cat ./banner.txt
+if [ -f "./banner.txt" ]; then
+  cat ./banner.txt
+fi
 
-# Build the microservices.
+# Find NPM and Docker installation in the os path.
+NPM_CMD=`which npm`
+DOCKER_CMD=`which docker`
+DOCKER_COMPOSE_CMD=`which docker-compose`
+
+# Check if NPM is installed.
+if [ ! -f "$NPM_CMD" ]; then
+  echo "NPM is not installed. Please installed it to continue!"
+
+  exit 1
+fi
+
+# Check if the Docker is installed.
+if [ ! -f "$DOCKER_CMD" ]; then
+  echo "Docker is not installed. Please installed it to continue!"
+
+  exit 1
+fi
+
+# Check if the Docker Compose is installed.
+if [ ! -f "$DOCKER_COMPOSE_CMD" ]; then
+  echo "Docker Compose is not installed. Please installed it to continue!"
+
+  exit 1
+fi
+
+# Build the services.
 echo Building base-consumer...
 cd base-consumer
 ./build.sh
@@ -32,4 +60,4 @@ cd ..
 # Build the container images.
 echo
 echo Building docker images...
-docker-compose --profile build build
+$DOCKER_COMPOSE_CMD --profile build build

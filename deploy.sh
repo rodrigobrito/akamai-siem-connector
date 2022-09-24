@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Show the banner.
-cat ./banner.txt
+if [ -f "./banner.txt" ]; then
+  cat ./banner.txt
+fi
 
 # Find terraform binary in the os path.
 TERRAFORM_CMD=`which terraform`
