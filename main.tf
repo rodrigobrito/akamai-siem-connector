@@ -62,6 +62,7 @@ resource "null_resource" "apply-settings" {
   depends_on = [ null_resource.setup-nodes ]
 }
 
+# Apply the stack.
 resource "null_resource" "apply-stack" {
   triggers = {
     always_run = "${timestamp()}"
