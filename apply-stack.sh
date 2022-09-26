@@ -22,5 +22,6 @@ export KUBECONFIG=./kubeconfig
 # Install the kubernetes orquestrator.
 $KUBECTL_CMD apply -n portainer -f https://downloads.portainer.io/ce2-15/portainer.yaml
 
-# Install the stack (uncomment the desired services to be deployed).
-$KUBECTL_CMD apply -f kubernetes.yml
+# Install the stack (uncomment the desired deployments and services to be applied).
+$KUBECTL_CMD apply -f stack-deployments.yml
+$KUBECTL_CMD apply -f stack-services.yml

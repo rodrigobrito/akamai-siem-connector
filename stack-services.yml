@@ -1,0 +1,123 @@
+# Service definition for Scheduler.
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler
+  namespace: akamai-siem-connector
+  labels:
+    app: scheduler
+spec:
+  ports:
+    - name: mqtt
+      port: 1883
+      targetPort: 1883
+  selector:
+    app: scheduler
+---
+# Service definition for Zookeeper.
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: akamai-siem-connector
+  labels:
+    app: zookeeper
+spec:
+  ports:
+    - name: backend
+      port: 2181
+      targetPort: 2181
+#    - name: frontend
+#      port: 8080
+#      targetPort: 8080
+  selector:
+    app: zookeeper
+---
+# Service definition for Apacke Kafka Broker.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker
+  namespace: akamai-siem-connector
+  labels:
+    app: kafka-broker
+spec:
+  ports:
+    - name: backend
+      port: 9092
+      targetPort: 9092
+  selector:
+    app: kafka-broker
+---
+# Service definition for Apacke Kafka Broker UI.
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-broker-ui
+  namespace: akamai-siem-connector
+  labels:
+    app: kafka-broker-ui
+spec:
+  ports:
+    - name: frontend
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: kafka-broker-ui
+---
+# Service definition for Opensearch.
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensearch
+  namespace: akamai-siem-connector
+  labels:
+    app: opensearch
+spec:
+  ports:
+    - name: backend
+      port: 9200
+      targetPort: 9200
+#    - name: frontend
+#      port: 9600
+#      targetPort: 9600
+  selector:
+    app: opensearch
+---
+# Service definition for Opensearch Dashboards.
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensearch-dashboards
+  namespace: akamai-siem-connector
+  labels:
+    app: opensearch-dashboards
+spec:
+  ports:
+    - name: frontend
+      port: 5601
+      targetPort: 5601
+  selector:
+    app: opensearch-dashboards
+---
+# Service definition for Ingress.
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress
+  namespace: akamai-siem-connector
+  labels:
+    app: ingress
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+    - name: https
+      port: 443
+      targetPort: 443
+      nodePort: 30443
+  selector:
+    app: ingress
