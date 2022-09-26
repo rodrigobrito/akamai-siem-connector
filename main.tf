@@ -39,24 +39,20 @@ resource "null_resource" "setup-nodes" {
   }
 
   provisioner "local-exec" {
-    command = <<EOT
-      "./setup-nodes.sh"
-    EOT
+    command = "./setup-nodes.sh ${var.linodes_count}"
   }
 
   depends_on = [ local_file.kubeconfig-creation ]
 }
 
-# Apply the settings.
+# Apply the stack.
 resource "null_resource" "apply-settings" {
   triggers = {
     always_run = "${timestamp()}"
   }
 
   provisioner "local-exec" {
-    command = <<EOT
-      "./apply-settings.sh"
-    EOT
+    command = "./apply-settings.sh"
   }
 
   depends_on = [ null_resource.setup-nodes ]
@@ -69,9 +65,7 @@ resource "null_resource" "apply-stack" {
   }
 
   provisioner "local-exec" {
-    command = <<EOT
-      "./apply-stack.sh"
-    EOT
+    command = "./apply-stack.sh"
   }
 
   depends_on = [ null_resource.apply-settings ]
