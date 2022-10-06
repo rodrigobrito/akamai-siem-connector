@@ -72,7 +72,7 @@ Just execute the shell script `build.sh` to start the building process.
 ### To run it locally (In your machine or in a standalone environment)
 
 - [`Docker 20.x or later`](https://docker.com)
-- [`Docker Comose 2.10.x or later`](https://docs.docker.com/compose/install/)
+- [`Docker Compose 2.10.x or later`](https://docs.docker.com/compose/install/)
 - `Any linux distribution with Kernel 5.x or later` or
 - `MacOS - Catalina or later` or
 - `MS-Windows 10 or later with WSL2`
