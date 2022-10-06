@@ -61,7 +61,7 @@ You'll need:
 - [`JDK 11 or later`](https://www.oracle.com/java/technologies/downloads)
 - [`Gradle 6.9.x`](https://www.gradle.org)
 - [`Docker 20.x or later`](https://docker.com)
-- [`Docker Comose 2.10.x or later`](https://docs.docker.com/compose/install/)
+- [`Docker Compose 2.10.x or later`](https://docs.docker.com/compose/install/)
 - `Any linux distribution with Kernel 5.x or later` or 
 - `MacOS - Catalina or later` or 
 - `MS-Windows 10 or later with WSL2`
