@@ -51,7 +51,7 @@ If you want to collaborate in this project, reach out us by e-Mail.
 - `1.0.0` - [![pipeline](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml/badge.svg?branch=1.0.0)](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml) - Last stable version.
 - `latest` - [![pipeline](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml/badge.svg?branch=main)](https://github.com/lcassiano/akamai-siem-connector/actions/workflows/pipeline.yml) - In constant improvement (For development or test use).
 
-## 7. Pre-requisites
+## 7. Requirements
 
 You'll need:
 
