@@ -23,6 +23,8 @@ if [ ! -f "$DOCKER_COMPOSE_CMD" ]; then
   exit 1
 fi
 
+cd ./iac
+
 # Read all environment variables.
 source ./.env
 
@@ -31,3 +33,5 @@ echo $REPOSITORY_PASSWORD | $DOCKER_CMD login -u $REPOSITORY_ID $REPOSITORY_URL 
 
 # Publish the container images in the docker registry repository.
 $DOCKER_COMPOSE_CMD --profile build push
+
+cd ..

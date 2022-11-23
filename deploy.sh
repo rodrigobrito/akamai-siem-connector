@@ -18,6 +18,8 @@ fi
 # Define variables based on the environment.
 VARIABLES="-var linode_token=$LINODE_TOKEN"
 
+cd ./iac
+
 # Initialize terraform (download the last version of providers & modules).
 $TERRAFORM_CMD init --upgrade || exit 1
 
@@ -26,3 +28,5 @@ $TERRAFORM_CMD plan $VARIABLES || exit 1
 
 # Apply the recipe to provision the infrastructure.
 $TERRAFORM_CMD apply $VARIABLES --auto-approve
+
+cd ..

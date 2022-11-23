@@ -23,5 +23,9 @@ if [ ! -f "$DOCKER_COMPOSE_CMD" ]; then
   exit 1
 fi
 
+cd ./iac
+
 # Start all or a specific service in a standalone execution.
 $DOCKER_COMPOSE_CMD --profile run up -d $1
+
+cd ..

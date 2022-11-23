@@ -18,5 +18,9 @@ fi
 # Define variables based on the environment.
 VARIABLES="-var linode_token=$LINODE_TOKEN"
 
+cd ./iac
+
 # Destroy infrastructure.
 $TERRAFORM_CMD destroy $VARIABLES --auto-approve
+
+cd ..

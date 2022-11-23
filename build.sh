@@ -60,4 +60,9 @@ cd ..
 # Build the container images.
 echo
 echo Building docker images...
+
+cd ./iac
+
 $DOCKER_COMPOSE_CMD --profile build build
+
+cd ..

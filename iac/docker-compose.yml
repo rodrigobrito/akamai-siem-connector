@@ -3,7 +3,7 @@ version: "3"
 services:
   # Base Apache kafka image to be used to construct the broker and zookeeper.
   base-kafka:
-    build: base-kafka
+    build: ${HOME_DIR}/base-kafka
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-kafka:${BUILD_VERSION}
     profiles:
       - build
@@ -11,7 +11,7 @@ services:
   # Zookeeper image used to control the Apache Kafka Broker instances.
   zookeeper:
     build:
-      context: kafka/zookeeper
+      context: ${HOME_DIR}/kafka/zookeeper
       args:
         - REPOSITORY_URL=${REPOSITORY_URL}
         - REPOSITORY_ID=${REPOSITORY_ID}
@@ -31,7 +31,7 @@ services:
   # Apache Kafka Broker image used to receive the events collected.
   kafka-broker:
     build:
-      context: kafka/broker
+      context: ${HOME_DIR}/kafka/broker
       args:
         - REPOSITORY_URL=${REPOSITORY_URL}
         - REPOSITORY_ID=${REPOSITORY_ID}
@@ -56,6 +56,9 @@ services:
       - KAFKA_CLUSTERS_0_NAME=kafka-broker
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-broker:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      - AUTH_TYPE="Login Form"
+      - SPRING_SECURITY_USER_NAME=admin
+      - SPRING_SECURITY_USER_PASSWORD=admin
       - SERVER_SERVLET_CONTEXT_PATH=
     container_name: kafka-broker-ui
     hostname: kafka-broker-ui
@@ -68,7 +71,7 @@ services:
 
   # Scheduler that defines the jobs for the consumer.
   scheduler:
-    build: scheduler
+    build: ${HOME_DIR}/scheduler
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-scheduler:${BUILD_VERSION}
     container_name: scheduler
     hostname: scheduler
@@ -82,7 +85,7 @@ services:
 
   # Base consumer image used to construct Akamai SIEM consumer. It also generates mock events.
   base-consumer:
-    build: base-consumer
+    build: ${HOME_DIR}/base-consumer
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-consumer:${BUILD_VERSION}
     environment:
       - NODE_OPTIONS="--max-old-space-size=1024"
@@ -99,7 +102,7 @@ services:
   # Consumer that collects from Akamai SIEM.
   consumer:
     build:
-      context: consumer
+      context: ${HOME_DIR}/consumer
       args:
         - REPOSITORY_URL=${REPOSITORY_URL}
         - REPOSITORY_ID=${REPOSITORY_ID}
@@ -120,7 +123,7 @@ services:
 
   # Base processor image used to constructor processors to consume Akamai SIEM events.
   base-processor:
-    build: base-processor
+    build: ${HOME_DIR}/base-processor
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/base-akamai-siem-processor:${BUILD_VERSION}
     # environment:
     #   - NODE_OPTIONS="--max-old-space-size=1024"
@@ -137,7 +140,7 @@ services:
   # Processor that stores events in Apache kafka Broker.
   processor-kafka:
     build:
-      context: processor-kafka
+      context: ${HOME_DIR}/processor-kafka
       args:
         - REPOSITORY_URL=${REPOSITORY_URL}
         - REPOSITORY_ID=${REPOSITORY_ID}
@@ -157,7 +160,7 @@ services:
 
   # Convert events stored in json format in Apache Kafka Broker.
   json-converter:
-    build: json-converter
+    build: ${HOME_DIR}/json-converter
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-json-converter:${BUILD_VERSION}
     environment:
       - "JAVA_OPTS=-Xms1024m -Xmx1024m"
@@ -189,7 +192,7 @@ services:
 
   # Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
   logstash-kafka-mssentinel:
-    build: logstash-kafka-mssentinel
+    build: ${HOME_DIR}/logstash-kafka-mssentinel
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-logstash-kafka-mssentinel:${BUILD_VERSION}
     # environment:
     #   - "LS_JAVA_OPTS=-Xms1024m -Xmx1024m"
@@ -245,7 +248,7 @@ services:
 
   # Ingress (HTTPs delivery).
   ingress:
-    build: ingress
+    build: ${HOME_DIR}/ingress
     image: ${REPOSITORY_URL}/${REPOSITORY_ID}/akamai-siem-ingress:${BUILD_VERSION}
     container_name: ingress
     hostname: ingress
@@ -253,8 +256,8 @@ services:
     #   - QUEUE_DOMAIN=queue.akamai.siem
     #   - DASHBOARDS_DOMAIN=dashboards.akamai.siem
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+    #  - "8443:443"
     volumes:
 #      - ${HOME_DIR}/ingress/etc/nginx/http.d/default.conf:/home/ingress/etc/nginx/http.d/default.conf
       - ${HOME_DIR}/ingress/etc/nginx/http.d/opensearch-dashboards.conf:/home/ingress/etc/nginx/http.d/opensearch-dashboards.conf

@@ -23,8 +23,12 @@ if [ ! -f "$DOCKER_COMPOSE_CMD" ]; then
   exit 1
 fi
 
+cd iac
+
 # Stop all services in a standalone execution.
 $DOCKER_COMPOSE_CMD down --remove-orphans || exit 1
 
 # Clean all volumes.
 echo Y | $DOCKER_CMD volume prune
+
+cd ..

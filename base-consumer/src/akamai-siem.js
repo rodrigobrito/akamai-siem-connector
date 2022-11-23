@@ -53,8 +53,8 @@ const fetchEvents = async function (messageObject, settingsObject){
         }
 
         let eventsObject = {
-            "job": messageObject.job,
-            "events": eventsList
+            job: messageObject.job,
+            events: eventsList
         };
 
         return resolve(eventsObject);
