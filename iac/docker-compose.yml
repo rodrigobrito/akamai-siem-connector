@@ -57,8 +57,8 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-broker:9092
       - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
       - AUTH_TYPE="Login Form"
-      - SPRING_SECURITY_USER_NAME=admin
-      - SPRING_SECURITY_USER_PASSWORD=admin
+      - SPRING_SECURITY_USER_NAME=${ADMIN_USERNAME}
+      - SPRING_SECURITY_USER_PASSWORD=${ADMIN_PASSWORD}
       - SERVER_SERVLET_CONTEXT_PATH=
     container_name: kafka-broker-ui
     hostname: kafka-broker-ui
@@ -216,6 +216,8 @@ services:
       - discovery.type=single-node
       - node.name=opensearch
       - bootstrap.memory_lock=true
+      - OPENSEARCH_USERNAME=${ADMIN_USERNAME}
+      - OPENSEARCH_PASSWORD=${ADMIN_PASSWORD}
       - "OPENSEARCH_JAVA_OPTS=-Xms1024m -Xmx1024m"
     container_name: opensearch
     hostname: opensearch
