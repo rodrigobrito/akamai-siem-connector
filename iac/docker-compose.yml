@@ -21,7 +21,6 @@ services:
     hostname: zookeeper
   #   ports:
   #     - "2181:2181"
-  #     - "8080:8080"
     volumes:
       - ${HOME_DIR}/kafka/zookeeper/etc/zookeeper.properties:/home/kafka/etc/zookeeper.properties
     profiles:
