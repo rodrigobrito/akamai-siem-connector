@@ -97,12 +97,16 @@ the provisioning definition by editing the `variable.tf` file. You can define th
 (default is `us-east`), the nodes types (default is 4 Cores, 8 GB RAM and 160 GB od disk) and the number of nodes
 (default is 2).
 
-After the provisioning finished, get the IPs of the cluster nodes through the `Linode Portal` or execute the following
-commands:
-- `export KUBECONFIG=./iac/kubeconfig`
-- `kubectl get nodes -o wide`
+After the provisioning finished, execute the following commands:
+- `export KUBECONFIG=./iac/kubeconfig` to specify how connect into the cluster.
+- `kubectl get nodes -o wide` to list the cluster nodes.
+- `kubectl get pods -n akamai-siem-connector -o wide` to list the pods of the stack.
 
-To stop, just execute shell script `undeploy.sh`.
+After all pods start, execute:
+
+- `kubect logs -f <pod-id> -n akamai-siem-connector` to check if everything is running property.
+
+To deprovision, just execute shell script `undeploy.sh`.
 
 ## 7. Architeture
 
