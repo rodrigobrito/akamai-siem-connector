@@ -131,8 +131,10 @@ file `consumer/etc/settings.json` and set the following attributes:
 
 By default, the `processor` will store the events in the disk (The default path of the storage is the `data` directory
 in the home directory). This architecture also supports [`Apache Kafka`](https://kafka.apache.org) to process/store the 
-events collected. If you want to use an external instance of `Apache Kafka`, just edit the file 
-`processor-kafka/etc/settings.json` and specify the connection attributes of the instance. 
+events collected. 
+
+If you want to use an external instance of `Apache Kafka`, just edit the file 
+`processor-kafka/etc/settings.json` and specify the attributes of the instance. 
 Depending on the volumetry, you will need to scale the `processor`.
 
 You can also transform the data fetched (in JSON format). You can find the transformation settings in the 
