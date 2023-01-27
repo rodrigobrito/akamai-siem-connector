@@ -99,7 +99,7 @@ the provisioning definition by editing the `variable.tf` file. You can define th
 
 After the provisioning finished, get the IPs of the cluster nodes through the `Linode Portal` or execute the following
 commands:
-- `export KUBECONFIG=./kubeconfig`
+- `export KUBECONFIG=./iac/kubeconfig`
 - `kubectl get nodes -o wide`
 
 To stop, just execute shell script `undeploy.sh`.
