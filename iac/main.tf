@@ -14,54 +14,45 @@ provider "linode" {
 
 # Define the Linode Kubernetes Engine provisioning.
 resource "linode_lke_cluster" "akamai-siem-connector" {
-  label       = "akamai-siem-connector"
-  k8s_version = "1.23"
-  region      = var.linodes_region
-  tags        = [ "akamai-siem-connector" ]
+  label       = var.linode_cluster_label
+  k8s_version = "1.25"
+  region      = var.linode_cluster_node_region
+  tags        = [ var.linode_cluster_label ]
 
   pool {
-    type  = var.linodes_type
-    count = var.linodes_count
+    type  = var.linode_cluster_node_type
+    count = var.linode_cluster_nodes_count
+  }
+
+  control_plane {
+    high_availability = var.linode_cluster_in_ha
   }
 }
 
-# Create the Kubernetes configuration file to be able to connect in the cluster after the provisioning.
-resource "local_file" "kubeconfig-creation" {
-  filename = "kubeconfig"
+# Download the Kubernetes configuration file to be able to connect in the cluster after the provisioning.
+resource "local_file" "download-kubeconfig" {
+  filename       = "kubeconfig"
   content_base64 = linode_lke_cluster.akamai-siem-connector.kubeconfig
-  depends_on = [ linode_lke_cluster.akamai-siem-connector ]
+  depends_on     = [ linode_lke_cluster.akamai-siem-connector ]
 }
 
-# Setup the cluster nodes.
-resource "null_resource" "setup-nodes" {
-  triggers = {
-    always_run = "${timestamp()}"
-  }
-
-  provisioner "local-exec" {
-    command = "./setup-nodes.sh ${var.linodes_count}"
-  }
-
-  depends_on = [ local_file.kubeconfig-creation ]
-}
-
-# Apply the stack.
+# Apply the stack settings.
 resource "null_resource" "apply-settings" {
   triggers = {
-    always_run = "${timestamp()}"
+    always_run = timestamp()
   }
 
   provisioner "local-exec" {
     command = "./apply-settings.sh"
   }
 
-  depends_on = [ null_resource.setup-nodes ]
+  depends_on = [ local_file.download-kubeconfig ]
 }
 
-# Apply the stack.
+# Apply the stack services and containers.
 resource "null_resource" "apply-stack" {
   triggers = {
-    always_run = "${timestamp()}"
+    always_run = timestamp()
   }
 
   provisioner "local-exec" {

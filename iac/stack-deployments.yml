@@ -1,48 +1,48 @@
 # Base consumer image used to construct Akamai SIEM consumer. It also generates mock events.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: base-consumer
-  namespace: akamai-siem-connector
-  labels:
-    app: base-consumer
-spec:
-  selector:
-    matchLabels:
-      app: base-consumer
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: base-consumer
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/role
-                    operator: In
-                    values:
-                      - "manager"
-      restartPolicy: Always
-      containers:
-        - name: base-consumer
-          image: ghcr.io/lcassiano/base-akamai-siem-consumer:latest
-          imagePullPolicy: Always
-          env:
-            - name: "NODE_OPTIONS"
-              value: "--max-old-space-size=1024"
-          volumeMounts:
-            - name: base-consumer-settings-volume
-              mountPath: /home/consumer/etc/settings.json
-              subPath: settings.json
-      volumes:
-        - name: base-consumer-settings-volume
-          configMap:
-            name: base-consumer-settings
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: base-consumer
+#  namespace: akamai-siem-connector
+#  labels:
+#    app: base-consumer
+#spec:
+#  selector:
+#    matchLabels:
+#      app: base-consumer
+#  replicas: 1
+#  strategy:
+#    type: RollingUpdate
+#  template:
+#    metadata:
+#      labels:
+#        app: base-consumer
+#    spec:
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: kubernetes.io/role
+#                    operator: In
+#                    values:
+#                      - "collector"
+#      restartPolicy: Always
+#      containers:
+#        - name: base-consumer
+#          image: ghcr.io/lcassiano/base-akamai-siem-consumer:latest
+#          imagePullPolicy: Always
+#          env:
+#            - name: "NODE_OPTIONS"
+#              value: "--max-old-space-size=1024"
+#          volumeMounts:
+#            - name: base-consumer-settings-volume
+#              mountPath: /home/consumer/etc/settings.json
+#              subPath: settings.json
+#      volumes:
+#        - name: base-consumer-settings-volume
+#          configMap:
+#            name: base-consumer-settings
 #---
 # Base processor image used to constructor processors to consume Akamai SIEM events.
 #apiVersion: apps/v1
@@ -72,7 +72,7 @@ spec:
 #                  - key: kubernetes.io/role
 #                    operator: In
 #                    values:
-#                      - "worker"
+#                      - "processor"
 #      restartPolicy: Always
 #      containers:
 #        - name: base-processor
@@ -91,56 +91,56 @@ spec:
 #            name: base-processor-settings
 #---
 # Consumer that collects from Akamai SIEM.
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  name: consumer
-#  namespace: akamai-siem-connector
-#  labels:
-#    app: consumer
-#spec:
-#  selector:
-#    matchLabels:
-#      app: consumer
-#  replicas: 1
-#  strategy:
-#    type: RollingUpdate
-#  template:
-#    metadata:
-#      labels:
-#        app: consumer
-#    spec:
-#      affinity:
-#        nodeAffinity:
-#          requiredDuringSchedulingIgnoredDuringExecution:
-#            nodeSelectorTerms:
-#              - matchExpressions:
-#                  - key: kubernetes.io/role
-#                    operator: In
-#                    values:
-#                      - "manager"
-#      restartPolicy: Always
-#      containers:
-#        - name: consumer
-#          image: ghcr.io/lcassiano/akamai-siem-consumer:latest
-#          imagePullPolicy: Always
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  namespace: akamai-siem-connector
+  labels:
+    app: consumer
+spec:
+  selector:
+    matchLabels:
+      app: consumer
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/role
+                    operator: In
+                    values:
+                      - "collector"
+      restartPolicy: Always
+      containers:
+        - name: consumer
+          image: ghcr.io/lcassiano/akamai-siem-consumer:latest
+          imagePullPolicy: Always
 #          env:
 #            - name: "NODE_OPTIONS"
 #              value: "--max-old-space-size=1024"
-#          volumeMounts:
-#            - name: consumer-edgerc-volume
-#              mountPath: /home/consumer/etc/.edgerc
-#              subPath: edgerc
-#            - name: consumer-settings-volume
-#              mountPath: /home/consumer/etc/settings.json
-#              subPath: settings.json
-#      volumes:
-#        - name: consumer-edgerc-volume
-#          configMap:
-#            name: consumer-edgerc
-#        - name: consumer-settings-volume
-#          configMap:
-#            name: consumer-settings
+          volumeMounts:
+            - name: consumer-edgerc-volume
+              mountPath: /home/consumer/etc/.edgerc
+              subPath: edgerc
+            - name: consumer-settings-volume
+              mountPath: /home/consumer/etc/settings.json
+              subPath: settings.json
+      volumes:
+        - name: consumer-edgerc-volume
+          configMap:
+            name: consumer-edgerc
+        - name: consumer-settings-volume
+          configMap:
+            name: consumer-settings
 ---
 # Processor that stores events in Apache kafka Broker.
 apiVersion: apps/v1
@@ -170,15 +170,15 @@ spec:
                   - key: kubernetes.io/role
                     operator: In
                     values:
-                      - "worker"
+                      - "processor"
       restartPolicy: Always
       containers:
         - name: processor-kafka
           image: ghcr.io/lcassiano/akamai-siem-processor-kafka:latest
           imagePullPolicy: Always
-          env:
-            - name: "NODE_OPTIONS"
-              value: "--max-old-space-size=1024"
+#          env:
+#            - name: "NODE_OPTIONS"
+#              value: "--max-old-space-size=1024"
           volumeMounts:
             - name: processor-kafka-settings-volume
               mountPath: /home/processor/etc/settings.json
@@ -216,15 +216,15 @@ spec:
                   - key: kubernetes.io/role
                     operator: In
                     values:
-                      - "worker"
+                      - "processor"
       restartPolicy: Always
       containers:
         - name: json-converter
           image: ghcr.io/lcassiano/akamai-siem-json-converter:latest
           imagePullPolicy: Always
-          env:
-            - name: "JAVA_OPTS"
-              value: "-Xms1024m -Xmx1024m"
+#          env:
+#            - name: "JAVA_OPTS"
+#              value: "-Xms1024m -Xmx1024m"
           volumeMounts:
             - name: json-converter-settings-volume
               mountPath: /home/json-converter/etc/settings.json
@@ -262,7 +262,7 @@ spec:
                   - key: kubernetes.io/role
                     operator: In
                     values:
-                      - "manager"
+                      - "collector"
       restartPolicy: Always
       containers:
         - name: scheduler
@@ -307,7 +307,7 @@ spec:
                   - key: kubernetes.io/role
                     operator: In
                     values:
-                      - "manager"
+                      - "collector"
       restartPolicy: Always
       containers:
         - name: zookeeper
@@ -315,7 +315,6 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 2181
-#            - containerPort: 8080
           volumeMounts:
             - name: zookeeper-settings-volume
               mountPath: /home/kafka/etc/zookeeper.properties
@@ -353,7 +352,7 @@ spec:
                   - key: kubernetes.io/role
                     operator: In
                     values:
-                      - "manager"
+                      - "collector"
       restartPolicy: Always
       containers:
         - name: kafka-broker
@@ -369,119 +368,26 @@ spec:
         - name: kafka-broker-settings-volume
           configMap:
             name: kafka-broker-settings
----
-# UI for Apache Kafka Broker.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: kafka-broker-ui
-  namespace: akamai-siem-connector
-  labels:
-    app: kafka-broker-ui
-spec:
-  selector:
-    matchLabels:
-      app: kafka-broker-ui
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: kafka-broker-ui
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/role
-                    operator: In
-                    values:
-                      - "manager"
-      restartPolicy: Always
-      containers:
-        - name: kafka-broker-iu
-          image: provectuslabs/kafka-ui:latest
-          imagePullPolicy: Always
-          env:
-            - name: "KAFKA_CLUSTERS_0_NAME"
-              value: "kafka-broker"
-            - name: "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS"
-              value: "kafka-broker:9092"
-            - name: "KAFKA_CLUSTERS_0_ZOOKEEPER"
-              value: "zookeeper:2181"
-            - name: "SERVER_SERVLET_CONTEXT_PATH"
-              value:
-          ports:
-            - containerPort: 8080
----
-# Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
-# troubleshooting or testing.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: logstash-kafka-opensearch
-  namespace: akamai-siem-connector
-  labels:
-    app: logstash-kafka-opensearch
-spec:
-  selector:
-    matchLabels:
-      app: logstash-kafka-opensearch
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: logstash-kafka-opensearch
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/role
-                    operator: In
-                    values:
-                      - "worker"
-      restartPolicy: Always
-      containers:
-        - name: logstash-kafka-opensearch
-          image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
-          imagePullPolicy: Always
-          env:
-            - name: "LS_JAVA_OPTS"
-              value: "-Xms1024m -Xmx1024m"
-          volumeMounts:
-            - name: logstash-kafka-opensearch-settings-volume
-              mountPath: /usr/share/logstash/pipeline/logstash.conf
-              subPath: logstash.conf
-      volumes:
-        - name: logstash-kafka-opensearch-settings-volume
-          configMap:
-            name: logstash-kafka-opensearch-settings
 #---
-# Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
+# UI for Apache Kafka Broker.
 #apiVersion: apps/v1
 #kind: Deployment
 #metadata:
-#  name: logstash-kafka-mssentinel
+#  name: kafka-broker-ui
 #  namespace: akamai-siem-connector
 #  labels:
-#    app: logstash-kafka-mssentinel
+#    app: kafka-broker-ui
 #spec:
 #  selector:
 #    matchLabels:
-#      app: logstash-kafka-mssentinel
+#      app: kafka-broker-ui
 #  replicas: 1
 #  strategy:
 #    type: RollingUpdate
 #  template:
 #    metadata:
 #      labels:
-#        app: logstash-kafka-mssentinel
+#        app: kafka-broker-ui
 #    spec:
 #      affinity:
 #        nodeAffinity:
@@ -491,176 +397,269 @@ spec:
 #                  - key: kubernetes.io/role
 #                    operator: In
 #                    values:
-#                      - "worker"
+#                      - "console"
 #      restartPolicy: Always
 #      containers:
-#        - name: logstash-kafka-mssentinel
-#          image: ghcr.io/lcassiano/akamai-siem-logstash-kafka-mssentinel:latest
+#        - name: kafka-broker-iu
+#          image: provectuslabs/kafka-ui:latest
+#          imagePullPolicy: Always
+#          env:
+#            - name: "KAFKA_CLUSTERS_0_NAME"
+#              value: "kafka-broker"
+#            - name: "KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS"
+#              value: "kafka-broker:9092"
+#            - name: "KAFKA_CLUSTERS_0_ZOOKEEPER"
+#              value: "zookeeper:2181"
+#            - name: "SERVER_SERVLET_CONTEXT_PATH"
+#              value:
+#          ports:
+#            - containerPort: 8080
+#---
+# Logstash image used to collect the events from Apache Kafka Broker and store into opensearch. Use this only for
+# troubleshooting or testing.
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: logstash-kafka-opensearch
+#  namespace: akamai-siem-connector
+#  labels:
+#    app: logstash-kafka-opensearch
+#spec:
+#  selector:
+#    matchLabels:
+#      app: logstash-kafka-opensearch
+#  replicas: 1
+#  strategy:
+#    type: RollingUpdate
+#  template:
+#    metadata:
+#      labels:
+#        app: logstash-kafka-opensearch
+#    spec:
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: kubernetes.io/role
+#                    operator: In
+#                    values:
+#                      - "processor"
+#      restartPolicy: Always
+#      containers:
+#        - name: logstash-kafka-opensearch
+#          image: opensearchproject/logstash-oss-with-opensearch-output-plugin:7.16.3
 #          imagePullPolicy: Always
 #          env:
 #            - name: "LS_JAVA_OPTS"
 #              value: "-Xms1024m -Xmx1024m"
 #          volumeMounts:
-#            - name: logstash-kafka-mssentinel-settings-volume
+#            - name: logstash-kafka-opensearch-settings-volume
 #              mountPath: /usr/share/logstash/pipeline/logstash.conf
 #              subPath: logstash.conf
 #      volumes:
-#        - name: logstash-kafka-mssentinel-volume
+#        - name: logstash-kafka-opensearch-settings-volume
 #          configMap:
-#            name: logstash-kafka-mssentinel-settings
+#            name: logstash-kafka-opensearch-settings
+---
+# Logstash image used to collect the events from Apache Kafka Broker and store into Microsoft Sentinel.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-kafka-mssentinel
+  namespace: akamai-siem-connector
+  labels:
+    app: logstash-kafka-mssentinel
+spec:
+  selector:
+    matchLabels:
+      app: logstash-kafka-mssentinel
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: logstash-kafka-mssentinel
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/role
+                    operator: In
+                    values:
+                      - "processor"
+      restartPolicy: Always
+      containers:
+        - name: logstash-kafka-mssentinel
+          image: ghcr.io/lcassiano/akamai-siem-logstash-kafka-mssentinel:latest
+          imagePullPolicy: Always
+#          env:
+#            - name: "LS_JAVA_OPTS"
+#              value: "-Xms1024m -Xmx1024m"
+          volumeMounts:
+            - name: logstash-kafka-mssentinel-settings-volume
+              mountPath: /usr/share/logstash/pipeline/logstash.conf
+              subPath: logstash.conf
+      volumes:
+        - name: logstash-kafka-mssentinel-settings-volume
+          configMap:
+            name: logstash-kafka-mssentinel-settings
 ---
 # Opensearch database to store the collected events. Use this only for troubleshooting or testing.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: opensearch
-  namespace: akamai-siem-connector
-  labels:
-    app: opensearch
-spec:
-  selector:
-    matchLabels:
-      app: opensearch
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: opensearch
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/role
-                    operator: In
-                    values:
-                      - "worker"
-      restartPolicy: Always
-      containers:
-        - name: opensearch
-          image: opensearchproject/opensearch:2.1.0
-          imagePullPolicy: Always
-          env:
-            - name: "discovery.type"
-              value: "single-node"
-            - name: "node.name"
-              value: "opensearch"
-            - name: "bootstrap.memory_lock"
-              value: "true"
-            - name: "OPENSEARCH_JAVA_OPTS"
-              value: "-Xms1024m -Xmx1024m"
-          ports:
-            - containerPort: 9200
-            - containerPort: 9600
----
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: opensearch
+#  namespace: akamai-siem-connector
+#  labels:
+#    app: opensearch
+#spec:
+#  selector:
+#    matchLabels:
+#      app: opensearch
+#  replicas: 1
+#  strategy:
+#    type: RollingUpdate
+#  template:
+#    metadata:
+#      labels:
+#        app: opensearch
+#    spec:
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: kubernetes.io/role
+#                    operator: In
+#                    values:
+#                      - "collector"
+#      restartPolicy: Always
+#      containers:
+#        - name: opensearch
+#          image: opensearchproject/opensearch:2.1.0
+#          imagePullPolicy: Always
+#          env:
+#            - name: "discovery.type"
+#              value: "single-node"
+#            - name: "node.name"
+#              value: "opensearch"
+#            - name: "bootstrap.memory_lock"
+#              value: "true"
+#            - name: "OPENSEARCH_JAVA_OPTS"
+#              value: "-Xms1024m -Xmx1024m"
+#          ports:
+#            - containerPort: 9200
+#            - containerPort: 9600
+#---
 # Opensearch dashboards image used to view/filter the collected events. Use this only for troubleshooting or testing.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: opensearch-dashboards
-  namespace: akamai-siem-connector
-  labels:
-    app: opensearch-dashboards
-spec:
-  selector:
-    matchLabels:
-      app: opensearch-dashboards
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: opensearch-dashboards
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/role
-                    operator: In
-                    values:
-                      - "manager"
-      restartPolicy: Always
-      containers:
-        - name: opensearch-dashboards
-          image: opensearchproject/opensearch-dashboards:2.1.0
-          imagePullPolicy: Always
-          env:
-            - name: "OPENSEARCH_HOSTS"
-              value: "https://opensearch:9200"
-          ports:
-            - containerPort: 5601
----
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: opensearch-dashboards
+#  namespace: akamai-siem-connector
+#  labels:
+#    app: opensearch-dashboards
+#spec:
+#  selector:
+#    matchLabels:
+#      app: opensearch-dashboards
+#  replicas: 1
+#  strategy:
+#    type: RollingUpdate
+#  template:
+#    metadata:
+#      labels:
+#        app: opensearch-dashboards
+#    spec:
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: kubernetes.io/role
+#                    operator: In
+#                    values:
+#                      - "console"
+#      restartPolicy: Always
+#      containers:
+#        - name: opensearch-dashboards
+#          image: opensearchproject/opensearch-dashboards:2.1.0
+#          imagePullPolicy: Always
+#          env:
+#            - name: "OPENSEARCH_HOSTS"
+#              value: "https://opensearch:9200"
+#          ports:
+#            - containerPort: 5601
+#---
 # Ingress (HTTP/HTTPs delivery).
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ingress
-  namespace: akamai-siem-connector
-  labels:
-    app: ingress
-spec:
-  selector:
-    matchLabels:
-      app: ingress
-  replicas: 1
-  strategy:
-    type: RollingUpdate
-  template:
-    metadata:
-      labels:
-        app: ingress
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: kubernetes.io/role
-                    operator: In
-                    values:
-                      - "manager"
-      restartPolicy: Always
-      containers:
-        - name: ingress
-          image: ghcr.io/lcassiano/akamai-siem-ingress:latest
-          imagePullPolicy: Always
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: ingress
+#  namespace: akamai-siem-connector
+#  labels:
+#    app: ingress
+#spec:
+#  selector:
+#    matchLabels:
+#      app: ingress
+#  replicas: 1
+#  strategy:
+#    type: RollingUpdate
+#  template:
+#    metadata:
+#      labels:
+#        app: ingress
+#    spec:
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: kubernetes.io/role
+#                    operator: In
+#                    values:
+#                      - "console"
+#      restartPolicy: Always
+#      containers:
+#        - name: ingress
+#          image: ghcr.io/lcassiano/akamai-siem-ingress:latest
+#          imagePullPolicy: Always
 #          env:
 #            - name: "QUEUE_DOMAIN"
 #              value: "queue.akamai.siem"
 #            - name: "DASHBOARDS_DOMAIN"
 #              value: "dashboards.akamai.siem"
-          ports:
-            - containerPort: 80
-            - containerPort: 443
-          volumeMounts:
+#          ports:
+#            - containerPort: 80
+#            - containerPort: 443
+#          volumeMounts:
 #            - name: ingress-default-settings-volume
 #              mountPath: /home/ingress/etc/nginx/http.d/default.conf
 #              subPath: default.conf
-            - name: ingress-opensearch-dashboards-settings-volume
-              mountPath: /home/ingress/etc/nginx/http.d/opensearch-dashboards.conf
-              subPath: opensearch-dashboards.conf
+#            - name: ingress-opensearch-dashboards-settings-volume
+#              mountPath: /home/ingress/etc/nginx/http.d/opensearch-dashboards.conf
+#              subPath: opensearch-dashboards.conf
 #            - name: ingress-cert-volume
 #              mountPath: /home/ingress/etc/ssl/certs/cert.crt
 #              subPath: cert
 #            - name: ingress-cert-key-volume
 #              mountPath: /home/ingress/etc/ssl/private/cert.key
 #              subPath: cert-key
-      volumes:
-        - name: ingress-default-settings-volume
-          configMap:
-            name: ingress-default-settings
-        - name: ingress-opensearch-dashboards-settings-volume
-          configMap:
-            name: ingress-opensearch-dashboards-settings
-        - name: ingress-cert-volume
-          configMap:
-            name: ingress-cert
-        - name: ingress-cert-key-volume
-          configMap:
-            name: ingress-cert-key
+#      volumes:
+#        - name: ingress-default-settings-volume
+#          configMap:
+#            name: ingress-default-settings
+#        - name: ingress-opensearch-dashboards-settings-volume
+#          configMap:
+#            name: ingress-opensearch-dashboards-settings
+#        - name: ingress-cert-volume
+#          configMap:
+#            name: ingress-cert
+#        - name: ingress-cert-key-volume
+#          configMap:
+#            name: ingress-cert-key

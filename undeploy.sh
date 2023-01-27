@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # Show the banner.
-if [ -f "./banner.txt" ]; then
-  cat ./banner.txt
+if [ -f "banner.txt" ]; then
+  cat banner.txt
 fi
 
 # Find terraform binary in the os path.
-TERRAFORM_CMD=`which terraform`
+TERRAFORM_CMD=$(which terraform)
 
 # Check if terraform is installed.
 if [ ! -f "$TERRAFORM_CMD" ]; then
@@ -15,12 +15,11 @@ if [ ! -f "$TERRAFORM_CMD" ]; then
   exit 1
 fi
 
-# Define variables based on the environment.
-VARIABLES="-var linode_token=$LINODE_TOKEN"
+cd iac
 
-cd ./iac
+source .env
 
 # Destroy infrastructure.
-$TERRAFORM_CMD destroy $VARIABLES --auto-approve
+$TERRAFORM_CMD destroy -var linode_token=$LINODE_TOKEN --auto-approve
 
 cd ..

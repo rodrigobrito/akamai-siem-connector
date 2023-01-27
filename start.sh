@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Show the banner.
-if [ -f "./banner.txt" ]; then
-  cat ./banner.txt
+if [ -f "banner.txt" ]; then
+  cat banner.txt
 fi
 
 # Find Docker installation in the os path.
-DOCKER_CMD=`which docker`
-DOCKER_COMPOSE_CMD=`which docker-compose`
+DOCKER_CMD=$(which docker)
+DOCKER_COMPOSE_CMD=$(which docker-compose)
 
 # Check if the Docker is installed.
 if [ ! -f "$DOCKER_CMD" ]; then
@@ -23,7 +23,9 @@ if [ ! -f "$DOCKER_COMPOSE_CMD" ]; then
   exit 1
 fi
 
-cd ./iac
+cd iac
+
+source .env
 
 # Start all or a specific service in a standalone execution.
 $DOCKER_COMPOSE_CMD --profile run up -d $1

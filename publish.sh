@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Show the banner.
-if [ -f "./banner.txt" ]; then
-  cat ./banner.txt
+if [ -f "banner.txt" ]; then
+  cat banner.txt
 fi
 
 # Find Docker installation in the os path.
-DOCKER_CMD=`which docker`
-DOCKER_COMPOSE_CMD=`which docker-compose`
+DOCKER_CMD=$(which docker)
+DOCKER_COMPOSE_CMD=$(which docker-compose)
 
 # Check if the Docker is installed.
 if [ ! -f "$DOCKER_CMD" ]; then
@@ -23,15 +23,14 @@ if [ ! -f "$DOCKER_COMPOSE_CMD" ]; then
   exit 1
 fi
 
-cd ./iac
+cd iac
 
-# Read all environment variables.
-source ./.env
+source .env
 
-# Authenticate in the docker registry repository.
+# Authenticate in the Docker registry repository.
 echo $REPOSITORY_PASSWORD | $DOCKER_CMD login -u $REPOSITORY_ID $REPOSITORY_URL --password-stdin || exit 1
 
-# Publish the container images in the docker registry repository.
+# Publish the container images in the Docker registry repository.
 $DOCKER_COMPOSE_CMD --profile build push
 
 cd ..

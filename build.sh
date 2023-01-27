@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Show the banner.
-if [ -f "./banner.txt" ]; then
-  cat ./banner.txt
+if [ -f "banner.txt" ]; then
+  cat banner.txt
 fi
 
 # Find NPM and Docker installation in the os path.
-NPM_CMD=`which npm`
-DOCKER_CMD=`which docker`
-DOCKER_COMPOSE_CMD=`which docker-compose`
+NPM_CMD=$(which npm)
+DOCKER_CMD=$(which docker)
+DOCKER_COMPOSE_CMD=$(which docker-compose)
 
 # Check if NPM is installed.
 if [ ! -f "$NPM_CMD" ]; then
@@ -57,11 +57,13 @@ cd ../json-converter
 ./build.sh || exit 1
 cd ..
 
+cd iac
+
+source .env
+
 # Build the container images.
 echo
 echo Building docker images...
-
-cd ./iac
 
 $DOCKER_COMPOSE_CMD --profile build build
 
