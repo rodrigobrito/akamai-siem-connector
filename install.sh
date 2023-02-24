@@ -75,7 +75,7 @@ create_settings_file() {
     echo '"outputQueue": "eventsToBeStored",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
     echo '"edgercFilename": "/home/consumer/etc/.edgerc",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
     echo '"edgercSection": "default",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
-    echo '"configsIds": "${CONFIGID}"' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"configsIds": "'${CONFIGID}'"' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
     echo "}" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
 }
 
