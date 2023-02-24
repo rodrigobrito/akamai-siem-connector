@@ -56,6 +56,7 @@ download_and_verify() {
 
 # --- Create .edgerc file with Akamai credentials ---
 create_edgerc_file() {
+    info "Create .edgerc file"
     echo "[default]" > ${SETUP_PATH}consumer/etc/.edgerc
     echo "host = $AKAMAIHOST" >> ${SETUP_PATH}consumer/etc/.edgerc
     echo "client_token = $CLIENTTOKEN" >> ${SETUP_PATH}consumer/etc/.edgerc
@@ -66,6 +67,7 @@ create_edgerc_file() {
 
 # --- Create .edgerc file with Akamai credentials ---
 create_settings_file() {
+    info "Create settings file"
     echo "{" > ${SETUP_PATH}consumer/etc/settings.json
     echo '"scheduler": \"scheduler\",' >> ${SETUP_PATH}consumer/etc/settings.json
     echo '"inputQueue": "jobsToBeProcessed",' >> ${SETUP_PATH}consumer/etc/settings.json
