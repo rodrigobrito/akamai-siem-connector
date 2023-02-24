@@ -50,6 +50,7 @@ setup_k3s() {
 # --- Download Akamai Connector from repo ---
 download_and_verify() {
     cd ${SETUP_PATH}
+    rm -rf ${SETUP_PATH}akamai-siem-connector/
     info "Cloning git ${GITHUB_URL}"
     git clone ${GITHUB_URL}
 }
@@ -57,25 +58,25 @@ download_and_verify() {
 # --- Create .edgerc file with Akamai credentials ---
 create_edgerc_file() {
     info "Create .edgerc file"
-    echo "[default]" > ${SETUP_PATH}consumer/etc/.edgerc
-    echo "host = $AKAMAIHOST" >> ${SETUP_PATH}consumer/etc/.edgerc
-    echo "client_token = $CLIENTTOKEN" >> ${SETUP_PATH}consumer/etc/.edgerc
-    echo "client_secret = $CLIENTSECRETPASSWORD" >> ${SETUP_PATH}consumer/etc/.edgerc
-    echo "access_token = $ACCESSTOKEN" >> ${SETUP_PATH}consumer/etc/.edgerc
-    echo "max-body = 131072" >> ${SETUP_PATH}consumer/etc/.edgerc
+    echo "[default]" > ${SETUP_PATH}akamai-siem-connector/consumer/etc/.edgerc
+    echo "host = $AKAMAIHOST" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/.edgerc
+    echo "client_token = $CLIENTTOKEN" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/.edgerc
+    echo "client_secret = $CLIENTSECRETPASSWORD" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/.edgerc
+    echo "access_token = $ACCESSTOKEN" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/.edgerc
+    echo "max-body = 131072" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/.edgerc
 }
 
 # --- Create .edgerc file with Akamai credentials ---
 create_settings_file() {
     info "Create settings file"
-    echo "{" > ${SETUP_PATH}consumer/etc/settings.json
-    echo '"scheduler": \"scheduler\",' >> ${SETUP_PATH}consumer/etc/settings.json
-    echo '"inputQueue": "jobsToBeProcessed",' >> ${SETUP_PATH}consumer/etc/settings.json
-    echo '"outputQueue": "eventsToBeStored",' >> ${SETUP_PATH}consumer/etc/settings.json
-    echo '"edgercFilename": "/home/consumer/etc/.edgerc",' >> ${SETUP_PATH}consumer/etc/settings.json
-    echo '"edgercSection": "default",' >> ${SETUP_PATH}consumer/etc/settings.json
-    echo '"configsIds": "${CONFIGID}"' >> ${SETUP_PATH}consumer/etc/settings.json
-    echo "}" >> ${SETUP_PATH}consumer/etc/settings.json
+    echo "{" > ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"scheduler": \"scheduler\",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"inputQueue": "jobsToBeProcessed",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"outputQueue": "eventsToBeStored",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"edgercFilename": "/home/consumer/etc/.edgerc",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"edgercSection": "default",' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo '"configsIds": "${CONFIGID}"' >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
+    echo "}" >> ${SETUP_PATH}akamai-siem-connector/consumer/etc/settings.json
 }
 
 # --- run the install process --
