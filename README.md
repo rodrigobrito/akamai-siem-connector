@@ -117,9 +117,10 @@ Follow this [diagram](https://viewer.diagrams.net/?tags=%7B%7D&target=blank&high
 To define the settings of the events collect, just edit the file `scheduler/etc/settings.json` and set the 
 following attributes:
 
-- `tps`: It's the number of events that should be processed per second in a minute.
-- `eventsPerJob`: Number of events that should be fetched. You can find this information analyzing the data in WSA.. 
-This information is essential to determine the number of requests/workers to collect the events per minute. Depending on 
+- `tps`: It's the number of events that should be processed per second within a minute.
+- `eventsPerJob`: Number of events that should be fetched in a job. A job is schedule in every minute. 
+
+These two attributes are essential to determine the number of jobs to collect the events based on the customer traffic. Depending on 
 the volumetry, you will need to scale the `consumer`.
 
 By default, the `consumer` will generate mock events. To define the credentials to connect in Akamai SIEM, just edit the
